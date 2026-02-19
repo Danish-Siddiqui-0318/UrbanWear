@@ -102,8 +102,17 @@ async function getUser(req, res) {
     }
 }
 
+async function updateUser(req, res) {
+    var id = req.params.id;
+    var updatedData = req.body;
+
+    await UserModel.findByIdAndUpdate(id, updatedData)
+    res.status(200).json({message: "Data Updated"})
+}
+
 module.exports = {
     registerUser,
     loginUser,
-    getUser
+    updateUser,
+    getUser,
 }
