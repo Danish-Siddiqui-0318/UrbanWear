@@ -32,7 +32,6 @@ function streamUpload(buffer) {
             },
             (error, result) => {
                 if (result) {
-                    console.log("Cloudinary upload successful:", result.secure_url);
                     resolve(result);
                 } else {
                     console.error("Cloudinary upload error:", error);
@@ -48,8 +47,6 @@ async function addProduct(req, res) {
     try {
         const { name, description, price, stock, category, discount, isFeatured } = req.body;
 
-        console.log("Request body:", req.body);
-        console.log("Files:", req.files);
 
         // Handle sizes - could be string, array, or multiple fields
         let sizes = req.body.sizes;
@@ -68,7 +65,6 @@ async function addProduct(req, res) {
             }
         }
 
-        console.log("Parsed sizes:", parsedSizes);
 
         if (!req.files || req.files.length === 0) {
             return res.status(400).json({
@@ -81,7 +77,6 @@ async function addProduct(req, res) {
 
         for (const file of req.files) {
             try {
-                console.log("Uploading file:", file.originalname);
 
                 // Convert buffer to base64 and upload
                 const b64 = Buffer.from(file.buffer).toString('base64');
@@ -97,7 +92,6 @@ async function addProduct(req, res) {
                     altText: name || "Product image"
                 });
 
-                console.log("Uploaded successfully:", result.secure_url);
             } catch (uploadError) {
                 console.error("Error uploading image:", uploadError);
                 return res.status(500).json({
@@ -120,7 +114,6 @@ async function addProduct(req, res) {
             images: uploadedImages
         });
 
-        console.log("Product created:", product._id);
 
         res.status(201).json({
             success: true,
