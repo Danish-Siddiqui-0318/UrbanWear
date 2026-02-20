@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { register } from "../api/auth";
+import axios from "axios";
 import {
     pageBackground,
     pageText,
     primaryGradient,
     primaryBorder,
-    secondaryBorder,
     cardBackground,
     mutedText,
     subtleText,
     accentText,
 } from "../theme/colors";
+import { API_BASE_URL } from "../config/api";
 
 function Signup() {
     const navigate = useNavigate();
@@ -49,10 +49,14 @@ function Signup() {
         setLoading(true);
 
         try {
-            await register({ name, email, password });
+            await axios.post(`${API_BASE_URL}/auth/register`, { name, email, password });
             navigate("/login", { state: { message: "Account created successfully! Please login." } });
         } catch (err) {
-            setError(err.message || "Something went wrong");
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError(err.message || "Something went wrong");
+            }
         } finally {
             setLoading(false);
         }
