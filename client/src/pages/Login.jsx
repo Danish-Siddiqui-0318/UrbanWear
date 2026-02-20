@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { login } from "../api/auth";
+import axios from "axios";
 import {
     pageBackground,
     pageText,
     primaryGradient,
     primaryBorder,
-    secondaryBorder,
     cardBackground,
     mutedText,
     subtleText,
     accentText,
 } from "../theme/colors";
+import { API_BASE_URL } from "../config/api";
 
 function Login() {
     const navigate = useNavigate();
@@ -31,30 +31,36 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await login({
+            const response = await axios.post(`${API_BASE_URL}/auth/login`, {
                 email,
                 password,
                 role: isAdminRoute ? "admin" : "user",
             });
 
-            localStorage.setItem("token", response.token);
-            if (response.role) {
-                localStorage.setItem("role", response.role);
+            const data = response.data;
+
+            localStorage.setItem("token", data.token);
+            if (data.role) {
+                localStorage.setItem("role", data.role);
             } else {
                 localStorage.setItem("role", isAdminRoute ? "admin" : "user");
             }
 
-            if (response.name) {
-                localStorage.setItem("name", response.name);
+            if (data.name) {
+                localStorage.setItem("name", data.name);
             }
 
-            if (isAdminRoute || response.role === "admin") {
+            if (isAdminRoute || data.role === "admin") {
                 navigate("/admin");
             } else {
-                navigate("/dashboard");
+                navigate("/");
             }
         } catch (err) {
-            setError(err.message || "Something went wrong");
+            if (err.response && err.response.data && err.response.data.message) {
+                setError(err.response.data.message);
+            } else {
+                setError(err.message || "Something went wrong");
+            }
         } finally {
             setLoading(false);
         }

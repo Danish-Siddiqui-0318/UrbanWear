@@ -3,11 +3,8 @@ import "./App.css";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import ProtectedRoute from "../Components/ProtectedRoute";
-import PublicRoute from "../Components/PublicRoute";
-import AdminRoute from "../Components/AdminRoute";
+import { PublicRoute, AdminRoute } from "./components/RouteGuards";
 
 function App() {
     return (
@@ -36,14 +33,6 @@ function App() {
                         <PublicRoute>
                             <Login />
                         </PublicRoute>
-                    }
-                />
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <Dashboard />
-                        </ProtectedRoute>
                     }
                 />
                 <Route

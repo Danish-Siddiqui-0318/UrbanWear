@@ -11,7 +11,7 @@ function AdminDashboard() {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
         localStorage.removeItem("name");
-        navigate("/admin/login");
+        navigate("/login");
     }
 
     return (
