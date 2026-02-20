@@ -1,7 +1,16 @@
 const mongoose = require("mongoose");
 
-mongoose.connect(process.env.MONGODB_URI).then(() => {
-    console.log("MongoDB Connected!");
-}).catch((err) => {
-    console.log(err);
-})
+const mongoUri = process.env.MONGODB_URI;
+
+if (!mongoUri) {
+    console.error("MONGODB_URI is not set in .env. Skipping MongoDB connection.");
+} else {
+    mongoose
+        .connect(mongoUri)
+        .then(() => {
+            console.log("MongoDB Connected!");
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+}

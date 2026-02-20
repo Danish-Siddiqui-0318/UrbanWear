@@ -1,10 +1,8 @@
-// Imports
-
-const express = require('express');
+const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-require('db/db.js')
+require("./db/db.js");
 const authRoute = require("./routes/auth_routes");
 const ProductRoute = require("./routes/product_routes");
 
@@ -16,8 +14,8 @@ app.use("/products", ProductRoute);
 app.use(require('./middleware/error_handling'))
 
 
-// Server Run
+const PORT = process.env.PORT || 5000;
 
-app.listen(process.env.PORT, () => {
-    console.log("Server running on port: " + process.env.PORT);
-})
+app.listen(PORT, () => {
+    console.log("Server running on port: " + PORT);
+});
