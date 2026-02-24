@@ -45,7 +45,19 @@ function streamUpload(buffer) {
 
 async function addProduct(req, res) {
     try {
-        const { name, description, price, stock, category, discount, isFeatured } = req.body;
+        const {
+            name,
+            description,
+            price,
+            stock,
+            category,
+            discount,
+            isFeatured,
+            status,
+            discountType,
+            onSale,
+            saleEndDate,
+        } = req.body;
 
 
         // Handle sizes - could be string, array, or multiple fields
@@ -110,8 +122,12 @@ async function addProduct(req, res) {
             category,
             sizes: parsedSizes,
             discount: discount ? Number(discount) : 0,
-            isFeatured: isFeatured === 'true' || isFeatured === true,
-            images: uploadedImages
+            discountType: discountType || "percent",
+            onSale: onSale === "true" || onSale === true,
+            saleEndDate: saleEndDate ? new Date(saleEndDate) : null,
+            isFeatured: isFeatured === "true" || isFeatured === true,
+            status: status || "active",
+            images: uploadedImages,
         });
 
 
@@ -173,15 +189,91 @@ async function getSingleProduct(req, res) {
 
 async function updateProduct(req, res) {
     const id = req.params.id;
-    const updatedData = req.body;
-    await ProductModel.findByIdAndUpdate(id, updatedData);
-    res.status(200).json({message: "Product updated"});
+    const {
+        name,
+        description,
+        price,
+        stock,
+        category,
+        sizes,
+        discount,
+        discountType,
+        onSale,
+        saleEndDate,
+        isFeatured,
+        status,
+    } = req.body;
+
+    const updatePayload = {};
+
+    if (name !== undefined) updatePayload.name = name;
+    if (description !== undefined) updatePayload.description = description;
+    if (price !== undefined) updatePayload.price = Number(price);
+    if (stock !== undefined) updatePayload.stock = Number(stock);
+    if (category !== undefined) updatePayload.category = category;
+    if (sizes !== undefined) updatePayload.sizes = sizes;
+    if (discount !== undefined) updatePayload.discount = Number(discount);
+    if (discountType !== undefined) updatePayload.discountType = discountType;
+    if (onSale !== undefined) {
+        updatePayload.onSale = onSale === true || onSale === "true";
+    }
+    if (saleEndDate !== undefined) {
+        updatePayload.saleEndDate = saleEndDate ? new Date(saleEndDate) : null;
+    }
+    if (isFeatured !== undefined) {
+        updatePayload.isFeatured = isFeatured === true || isFeatured === "true";
+    }
+    if (status !== undefined) updatePayload.status = status;
+
+    await ProductModel.findByIdAndUpdate(id, updatePayload);
+    res.status(200).json({ message: "Product updated" });
+}
+
+async function updateProductStock(req, res) {
+    try {
+        const id = req.params.id;
+        const { stock } = req.body;
+
+        if (stock === undefined || Number.isNaN(Number(stock))) {
+            return res.status(400).json({ message: "Valid stock value is required" });
+        }
+
+        const product = await ProductModel.findByIdAndUpdate(
+            id,
+            { stock: Number(stock) },
+            { new: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            product,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || "Failed to update stock",
+        });
+    }
+}
+
+async function deleteProduct(req, res) {
+    const id = req.params.id;
+    const product = await ProductModel.findByIdAndDelete(id);
+    if (!product) {
+        return res.status(404).json({message: "Product not found"});
+    }
+    res.status(200).json({message: "Product deleted"});
 }
 
 module.exports = {
     addProduct,
     getAllProducts,
     updateProduct,
-    getSingleProduct
+    getSingleProduct,
+    deleteProduct,
+    updateProductStock,
 }
 

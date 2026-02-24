@@ -1,267 +1,279 @@
-import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { primaryGradient } from "../theme/colors";
+// components/Navbar.jsx
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+    pageBackground,
+    pageText,
+    primaryBorder,
+    mutedText,
+    accentText,
+} from "../theme/colors";
 
-function Navbar({ onSearchClick }) {
-    const location = useLocation();
+function Navbar({ variant = "public", name = "Admin", onLogout }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [cartCount] = useState(0);
     const navigate = useNavigate();
-    const [menuOpen, setMenuOpen] = useState(false);
-    const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-    const userEmail = localStorage.getItem("userEmail") || "User";
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
-    const accountPath = token ? (role === "admin" ? "/admin" : "/") : "/login";
-    const accountLabel = token ? (role === "admin" ? "Admin" : "Home") : "Account";
-
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        localStorage.removeItem("userEmail");
-        navigate("/login");
-        setProfileMenuOpen(false);
-    };
-
-    const links = [
-        { to: "/", label: "Home", icon: "🏠" },
-        { to: "/#hoodies", label: "Hoodies", icon: "👕" },
-        { to: "/collections", label: "Collections", icon: "📦" },
-        { to: "/about", label: "About", icon: "ℹ️" },
+    const navLinks = [
+        { name: "Home", path: "/" },
+        { name: "Shop", path: "/shop" },
+        { name: "New Arrivals", path: "/new-arrivals" },
+        { name: "Collections", path: "/collections" },
+        { name: "Sale", path: "/sale" },
     ];
 
-    function isActive(path) {
-        const basePath = path.split("#")[0];
-        return location.pathname === basePath;
+    if (variant === "admin") {
+        return (
+            <header
+                className={`${pageBackground} ${pageText} border-b ${primaryBorder} sticky top-0 z-40`}
+            >
+                <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-[rgb(234,164,52)] to-[rgb(234,164,52)] text-xs font-bold text-slate-950">
+                            UW
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold tracking-tight">
+                                UrbanWear Admin
+                            </span>
+                            <span className={`text-[11px] ${mutedText}`}>
+                                Dashboard overview and management
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Link
+                            to="/"
+                            className="hidden text-xs text-neutral-600 underline-offset-2 hover:underline sm:inline"
+                        >
+                            Back to store
+                        </Link>
+                        <div className="hidden text-right text-xs sm:block">
+                            <p className={mutedText}>Signed in as</p>
+                            <p className={`font-medium ${accentText}`}>{name}</p>
+                        </div>
+                        <button
+                            onClick={onLogout}
+                            className="rounded-full border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-800 transition hover:border-neutral-500 hover:bg-neutral-100"
+                        >
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </header>
+        );
     }
 
     return (
-        <nav className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur-md shadow-sm">
-            <div className="flex h-16 w-full items-center justify-between px-4 sm:px-6 lg:px-8">
-                {/* Logo and mobile menu */}
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => setMenuOpen((prev) => !prev)}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 text-neutral-700 hover:bg-neutral-100 transition-colors md:hidden"
-                        aria-label="Toggle navigation"
+        <nav
+            className={`fixed w-full z-50 transition-all duration-500 ${
+                scrolled
+                    ? `${pageBackground} backdrop-blur-lg bg-opacity-90 shadow-lg py-3`
+                    : "bg-transparent py-5"
+            }`}
+        >
+            <div className="container mx-auto px-4 md:px-6">
+                <div className="flex items-center justify-between">
+                    <Link
+                        to="/"
+                        className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300"
                     >
-                        <div className="flex flex-col gap-1.5">
-                            <span className={`block h-0.5 w-5 bg-neutral-700 transition-transform ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-                            <span className={`block h-0.5 w-5 bg-neutral-700 transition-opacity ${menuOpen ? 'opacity-0' : ''}`} />
-                            <span className={`block h-0.5 w-5 bg-neutral-700 transition-transform ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-                        </div>
-                    </button>
-                    
-                    <Link to="/" className="flex items-center gap-2 group">
-                        <div
-                            className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r ${primaryGradient} text-lg font-bold text-white shadow-md group-hover:shadow-lg transition-shadow`}
-                        >
-                            UW
-                        </div>
-                        <span className="hidden text-base font-bold tracking-tight text-neutral-900 sm:inline-block group-hover:text-[rgb(234,164,52)] transition-colors">
-                            UrbanWear
-                        </span>
+                        URBAN WEAR
                     </Link>
-                </div>
 
-                {/* Desktop Navigation */}
-                <div className="hidden items-center gap-8 text-sm font-medium text-neutral-700 md:flex">
-                    {links.map((link) => (
-                        <Link
-                            key={link.label}
-                            to={link.to}
-                            className={`relative px-1 py-2 transition-colors ${
-                                isActive(link.to) 
-                                    ? "text-[rgb(234,164,52)] font-semibold" 
-                                    : "hover:text-neutral-900"
-                            }`}
-                        >
-                            {link.label}
-                            {isActive(link.to) && (
-                                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[rgb(234,164,52)] rounded-full" />
-                            )}
-                        </Link>
-                    ))}
-                </div>
+                    <div className="hidden lg:flex items-center space-x-8">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
+                            >
+                                {link.name}
+                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 group-hover:w-full"></span>
+                            </Link>
+                        ))}
+                    </div>
 
-                {/* Right side icons */}
-                <div className="flex items-center gap-2">
-                    {/* Search Button */}
-                    <button
-                        type="button"
-                        onClick={onSearchClick}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400 transition-all"
-                        aria-label="Search"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                    </button>
-
-                    {/* Cart Button */}
-                    <button
-                        type="button"
-                        className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400 transition-all"
-                        aria-label="Cart"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        >
-                            <circle cx="9" cy="21" r="1" />
-                            <circle cx="20" cy="21" r="1" />
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                        </svg>
-                        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[rgb(234,164,52)] text-[10px] font-bold text-white flex items-center justify-center">
-                            3
-                        </span>
-                    </button>
-
-                    {/* Profile Dropdown */}
-                    <div className="relative">
+                    <div className="hidden lg:flex items-center space-x-6">
                         <button
-                            type="button"
-                            onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400 transition-all"
-                            aria-label="Profile"
+                            className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
                         >
                             <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                className="h-4 w-4"
+                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
+                                viewBox="0 0 24 24"
                             >
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                <circle cx="12" cy="7" r="4" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                />
                             </svg>
+                            <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
                         </button>
 
-                        {/* Profile Dropdown Menu */}
-                        {profileMenuOpen && (
-                            <>
-                                <div 
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setProfileMenuOpen(false)}
+                        <Link
+                            to="/account"
+                            className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                                 />
-                                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-neutral-200 bg-white shadow-lg z-50 py-1">
-                                    {token ? (
-                                        <>
-                                            <div className="px-4 py-2 border-b border-neutral-100">
-                                                <p className="text-xs text-neutral-500">Signed in as</p>
-                                                <p className="text-sm font-medium text-neutral-900 truncate">
-                                                    {userEmail}
-                                                </p>
-                                            </div>
-                                            <Link
-                                                to={accountPath}
-                                                onClick={() => setProfileMenuOpen(false)}
-                                                className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                                            >
-                                                {accountLabel}
-                                            </Link>
-                                            <Link
-                                                to="/profile"
-                                                onClick={() => setProfileMenuOpen(false)}
-                                                className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                                            >
-                                                Profile Settings
-                                            </Link>
-                                            <Link
-                                                to="/orders"
-                                                onClick={() => setProfileMenuOpen(false)}
-                                                className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                                            >
-                                                My Orders
-                                            </Link>
-                                            <button
-                                                onClick={handleLogout}
-                                                className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-neutral-100"
-                                            >
-                                                Logout
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Link
-                                                to="/login"
-                                                onClick={() => setProfileMenuOpen(false)}
-                                                className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                                            >
-                                                Login
-                                            </Link>
-                                            <Link
-                                                to="/register"
-                                                onClick={() => setProfileMenuOpen(false)}
-                                                className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 transition-colors"
-                                            >
-                                                Register
-                                            </Link>
-                                        </>
-                                    )}
-                                </div>
-                            </>
-                        )}
+                            </svg>
+                            <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                        </Link>
+
+                        <button
+                            onClick={() => navigate("/cart")}
+                            className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
+                        >
+                            <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                />
+                            </svg>
+                            {cartCount > 0 && (
+                                <span className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-xs text-white flex items-center justify-center animate-bounce">
+                                    {cartCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="lg:hidden text-white focus:outline-none"
+                    >
+                        <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            {isOpen ? (
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                />
+                            ) : (
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M4 6h16M4 12h16M4 18h16"
+                                />
+                            )}
+                        </svg>
+                    </button>
+                </div>
+
+                <div
+                    className={`lg:hidden transition-all duration-500 overflow-hidden ${
+                        isOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
+                    }`}
+                >
+                    <div className="flex flex-col space-y-4 pb-4">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                className={`${pageText} hover:text-emerald-500 transition-colors py-2`}
+                                onClick={() => setIsOpen(false)}
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                        <div className="flex space-x-4 pt-4 border-t border-gray-700">
+                            <button className={`${pageText} hover:text-emerald-500`}>
+                                <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
+                                </svg>
+                            </button>
+                            <Link
+                                to="/account"
+                                className={`${pageText} hover:text-emerald-500`}
+                            >
+                                <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                    />
+                                </svg>
+                            </Link>
+                            <button
+                                onClick={() => navigate("/cart")}
+                                className={`${pageText} hover:text-emerald-500 relative`}
+                            >
+                                <svg
+                                    className="w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                                    />
+                                </svg>
+                                {cartCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-xs text-white flex items-center justify-center">
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* Mobile Menu */}
-            {menuOpen && (
-                <div className="md:hidden border-t border-neutral-200 bg-white">
-                    <div className="px-4 py-3 space-y-1">
-                        {links.map((link) => (
-                            <Link
-                                key={link.label}
-                                to={link.to}
-                                onClick={() => setMenuOpen(false)}
-                                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                                    isActive(link.to)
-                                        ? "bg-[rgba(234,164,52,0.08)] text-[rgb(234,164,52)]"
-                                        : "text-neutral-700 hover:bg-neutral-100"
-                                }`}
-                            >
-                                <span className="text-lg">{link.icon}</span>
-                                {link.label}
-                            </Link>
-                        ))}
-                        
-                        {/* Mobile Logout Button */}
-                        {token && (
-                            <button
-                                onClick={() => {
-                                    handleLogout();
-                                    setMenuOpen(false);
-                                }}
-                                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
-                            >
-                                <span className="text-lg">🚪</span>
-                                Logout
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
         </nav>
     );
 }

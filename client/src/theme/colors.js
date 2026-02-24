@@ -16,3 +16,4 @@ export const subtleText = "text-neutral-400";
 export const accentText = "text-[rgb(234,164,52)]";
 export const accentBadgeBorder = "border-[rgba(234,164,52,0.6)]";
 export const accentBadgeBackground = "bg-[rgba(234,164,52,0.06)]";
+

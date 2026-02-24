@@ -5,7 +5,7 @@ export function ProtectedRoute({ children }) {
     const { isAuthenticated } = getAuthInfo();
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/admin/login" replace />;
     }
 
     return children;
@@ -14,11 +14,8 @@ export function ProtectedRoute({ children }) {
 export function PublicRoute({ children }) {
     const { isAuthenticated, isAdmin } = getAuthInfo();
 
-    if (isAuthenticated) {
-        if (isAdmin) {
-            return <Navigate to="/admin" replace />;
-        }
-        return <Navigate to="/" replace />;
+    if (isAuthenticated && isAdmin) {
+        return <Navigate to="/admin" replace />;
     }
 
     return children;

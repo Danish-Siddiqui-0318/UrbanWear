@@ -12,6 +12,15 @@ async function jwtMiddleWear(req, res, next) {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+        if (decoded.role === "admin") {
+            req.user = {
+                email: decoded.email,
+                role: "admin",
+                isAdmin: true,
+            };
+            return next();
+        }
+
         const user = await UserModel.findById(decoded._id).select("-password");
         if (!user) {
             return res.status(401).json({ message: "User not found" });
