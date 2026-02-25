@@ -1,55 +1,95 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import {
     pageBackground,
     pageText,
     mutedText,
-    cardBackground,
-    secondaryBorder,
-    accentText,
 } from "../theme/colors";
+import { API_BASE_URL } from "../config/api";
 
 function Sale() {
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSaleProducts = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`${API_BASE_URL}/products/products`, {
+                    params: { page: 1, limit: 50 }
+                });
+                const saleItems = (response.data.products || []).filter(p => p.onSale);
+                setProducts(saleItems);
+            } catch (error) {
+                console.error("Failed to fetch sale products", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSaleProducts();
+    }, []);
+
     return (
         <div className={`min-h-screen ${pageBackground} ${pageText}`}>
             <Navbar />
-            <main className="pt-24 pb-20 px-4">
-                <div className="mx-auto flex max-w-5xl flex-col gap-10">
+            <main className="pt-28 pb-20 px-4">
+                <div className="mx-auto flex max-w-6xl flex-col gap-10">
                     <section className="flex flex-col gap-4">
-                        <p className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
-                            Sale
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-500">
+                            Offers
                         </p>
-                        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                            UrbanWear sale and special offers
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+                            Exclusive Deals
                         </h1>
                         <p className={`max-w-xl text-sm sm:text-base ${mutedText}`}>
-                            Discover limited-time discounts on hoodies, tees and more.
-                            Refresh your wardrobe while the prices are low.
+                            Premium UrbanGear at unbeatable prices. Limited time offers on our most popular styles.
                         </p>
                     </section>
 
-                    <section
-                        className={`rounded-3xl border ${secondaryBorder} ${cardBackground} p-6 sm:p-8`}
-                    >
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <p className="text-sm font-medium">
-                                    Check back for seasonal drops
-                                </p>
-                                <p className={`mt-1 text-xs ${mutedText}`}>
-                                    Sale items will appear here as new campaigns go live.
-                                </p>
-                            </div>
-                            <div className="flex flex-col items-start gap-2 text-xs sm:items-end">
-                                <span className={`font-semibold ${accentText}`}>
-                                    Sign in when available to see members-only prices.
-                                </span>
-                                <span className={mutedText}>
-                                    Combine sale items with new arrivals for complete looks.
-                                </span>
-                            </div>
+                    {loading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="aspect-[4/5] rounded-2xl bg-white/5 animate-pulse" />
+                            ))}
                         </div>
-                    </section>
+                    ) : products.length === 0 ? (
+                        <div className="py-20 text-center">
+                            <p className={mutedText}>No items currently on sale. Check back soon!</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+                            {products.map((product) => (
+                                <Link 
+                                    key={product._id} 
+                                    to={`/product/${product._id}`}
+                                    className="group flex flex-col gap-4"
+                                >
+                                    <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-900 border border-white/5 shadow-lg">
+                                        <img 
+                                            src={product.images[0]?.url || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop"} 
+                                            alt={product.name}
+                                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        <div className="absolute top-3 left-3 px-3 py-1 bg-emerald-500 text-slate-950 text-[10px] font-bold rounded-full uppercase tracking-wider">
+                                            Sale
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-1 px-1">
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">{product.category}</p>
+                                            <p className="text-sm font-bold text-neutral-900">Rs.{product.price}</p>
+                                        </div>
+                                        <h3 className="text-sm font-medium text-neutral-800 group-hover:text-emerald-500 transition-colors truncate">
+                                            {product.name}
+                                        </h3>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </main>
             <Footer />

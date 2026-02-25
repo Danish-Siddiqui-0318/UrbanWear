@@ -11,6 +11,7 @@ function Home() {
     const [isVisible, setIsVisible] = useState({});
     const [counts, setCounts] = useState({ customers: 0, products: 0, years: 0, stores: 0 });
     const [featuredProducts, setFeaturedProducts] = useState([]);
+    const [loadingFeatured, setLoadingFeatured] = useState(true);
     const [announcement, setAnnouncement] = useState(null);
     const [heroSlides, setHeroSlides] = useState([]);
     const [activeHeroIndex, setActiveHeroIndex] = useState(0);
@@ -71,14 +72,14 @@ function Home() {
     useEffect(() => {
         async function loadFeatured() {
             try {
+                setLoadingFeatured(true);
                 const response = await axios.get(`${API_BASE_URL}/products/products`, {
-                    params: { page: 1, limit: 12 },
+                    params: { isFeatured: true, limit: 4 },
                 });
                 const products = response.data.products || [];
-                const featured = products.filter((product) => product.isFeatured);
 
                 setFeaturedProducts(
-                    featured.map((product) => ({
+                    products.map((product) => ({
                         id: product._id,
                         name: product.name,
                         price: product.price,
@@ -90,8 +91,11 @@ function Home() {
                         isNew: product.onSale,
                     }))
                 );
-            } catch {
+            } catch (error) {
+                console.error("Failed to fetch featured products", error);
                 setFeaturedProducts([]);
+            } finally {
+                setLoadingFeatured(false);
             }
         }
 
@@ -165,7 +169,7 @@ function Home() {
     const highlights = [
         {
             title: 'Free Shipping',
-            subtitle: 'On orders over $80',
+            subtitle: 'On orders over Rs.8000',
         },
         {
             title: 'Sustainable Fabrics',
@@ -406,43 +410,60 @@ function Home() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {featuredProducts.map((product, index) => (
-                            <div
-                                key={product.id}
-                                className={`group bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-500 hover:scale-105 ${
-                                    isVisible.products ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-                                }`}
-                                style={{ transitionDelay: `${index * 100}ms` }}
-                            >
-                                <div className="relative h-80 overflow-hidden">
-                                    <img 
-                                        src={product.image} 
-                                        alt={product.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                    />
-                                    {product.isNew && (
-                                        <span className="absolute top-4 left-4 px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-semibold rounded-full">
-                                            New Arrival
-                                        </span>
-                                    )}
-                                    <button className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-emerald-500">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div className="p-4">
-                                    <p className={`text-sm ${mutedText} mb-1`}>{product.category}</p>
-                                    <h3 className="font-semibold mb-2">{product.name}</h3>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xl font-bold text-emerald-500">${product.price}</span>
-                                        <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 hover:scale-105">
-                                            Add to Cart
+                        {loadingFeatured ? (
+                            [1, 2, 3, 4].map(i => (
+                                <div key={i} className="aspect-[4/5] rounded-xl bg-white/5 animate-pulse" />
+                            ))
+                        ) : featuredProducts.length === 0 ? (
+                            <div className="col-span-full text-center py-10">
+                                <p className={mutedText}>No featured products available at the moment.</p>
+                            </div>
+                        ) : (
+                            featuredProducts.map((product, index) => (
+                                <Link
+                                    key={product.id}
+                                    to={`/product/${product.id}`}
+                                    className={`group bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-500 hover:scale-105 ${
+                                        isVisible.products ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+                                    }`}
+                                    style={{ transitionDelay: `${index * 100}ms` }}
+                                >
+                                    <div className="relative h-80 overflow-hidden">
+                                        <img 
+                                            src={product.image} 
+                                            alt={product.name}
+                                            className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${product.stock <= 0 ? 'opacity-40 grayscale' : ''}`}
+                                        />
+                                        {product.stock <= 0 ? (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                                                <span className="px-4 py-2 bg-white text-black text-xs font-bold rounded-full uppercase tracking-[0.2em] shadow-xl">
+                                                    Sold Out
+                                                </span>
+                                            </div>
+                                        ) : product.isNew && (
+                                            <span className="absolute top-4 left-4 px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-semibold rounded-full">
+                                                New Arrival
+                                            </span>
+                                        )}
+                                        <button className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-emerald-500">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                        ))}
+                                    <div className="p-4">
+                                        <p className={`text-sm ${mutedText} mb-1`}>{product.category}</p>
+                                        <h3 className="font-semibold mb-2">{product.name}</h3>
+                                        <div className="flex items-center justify-between">
+                                        <span className="text-xl font-bold text-emerald-500">Rs.{product.price}</span>
+                                        <div className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 group-hover:scale-105">
+                                            View Details
+                                        </div>
+                                    </div>
+                                    </div>
+                                </Link>
+                            ))
+                        )}
                     </div>
                 </div>
             </section>

@@ -87,31 +87,24 @@ async function addProduct(req, res) {
         // Upload images to Cloudinary
         const uploadedImages = [];
 
-        for (const file of req.files) {
-            try {
-
-                // Convert buffer to base64 and upload
-                const b64 = Buffer.from(file.buffer).toString('base64');
-                const dataURI = `data:${file.mimetype};base64,${b64}`;
-
-                const result = await cloudinary.uploader.upload(dataURI, {
-                    folder: "products",
-                    timeout: 120000 // Increase timeout to 2 minutes
-                });
-
-                uploadedImages.push({
-                    url: result.secure_url,
-                    altText: name || "Product image"
-                });
-
-            } catch (uploadError) {
-                console.error("Error uploading image:", uploadError);
-                return res.status(500).json({
-                    message: "Error uploading images to Cloudinary",
-                    error: uploadError.message
-                });
+        if (req.files && req.files.length > 0) {
+            console.log(`Processing ${req.files.length} new files for NEW product`);
+            for (const file of req.files) {
+                try {
+                    const result = await streamUpload(file.buffer);
+                    if (result && result.secure_url) {
+                        uploadedImages.push({
+                            url: result.secure_url,
+                            altText: name || "Product image"
+                        });
+                    }
+                } catch (uploadError) {
+                    console.error("Error uploading image to Cloudinary:", uploadError);
+                }
             }
         }
+        
+        console.log(`Total images to save for new product: ${uploadedImages.length}`);
 
         // Create product
         const product = await ProductModel.create({
@@ -188,45 +181,110 @@ async function getSingleProduct(req, res) {
 }
 
 async function updateProduct(req, res) {
-    const id = req.params.id;
-    const {
-        name,
-        description,
-        price,
-        stock,
-        category,
-        sizes,
-        discount,
-        discountType,
-        onSale,
-        saleEndDate,
-        isFeatured,
-        status,
-    } = req.body;
+    try {
+        const id = req.params.id;
+        const {
+            name,
+            description,
+            price,
+            stock,
+            category,
+            discount,
+            discountType,
+            onSale,
+            saleEndDate,
+            isFeatured,
+            status,
+        } = req.body;
 
-    const updatePayload = {};
+        // Handle sizes
+        let sizes = req.body.sizes;
+        let parsedSizes;
+        if (sizes) {
+            if (Array.isArray(sizes)) {
+                parsedSizes = sizes;
+            } else {
+                try {
+                    parsedSizes = JSON.parse(sizes);
+                } catch (e) {
+                    parsedSizes = sizes.split(',').map(s => s.trim());
+                }
+            }
+        }
 
-    if (name !== undefined) updatePayload.name = name;
-    if (description !== undefined) updatePayload.description = description;
-    if (price !== undefined) updatePayload.price = Number(price);
-    if (stock !== undefined) updatePayload.stock = Number(stock);
-    if (category !== undefined) updatePayload.category = category;
-    if (sizes !== undefined) updatePayload.sizes = sizes;
-    if (discount !== undefined) updatePayload.discount = Number(discount);
-    if (discountType !== undefined) updatePayload.discountType = discountType;
-    if (onSale !== undefined) {
-        updatePayload.onSale = onSale === true || onSale === "true";
-    }
-    if (saleEndDate !== undefined) {
-        updatePayload.saleEndDate = saleEndDate ? new Date(saleEndDate) : null;
-    }
-    if (isFeatured !== undefined) {
-        updatePayload.isFeatured = isFeatured === true || isFeatured === "true";
-    }
-    if (status !== undefined) updatePayload.status = status;
+        // Handle existing images
+        let existingImages = req.body.existingImages;
+        let parsedExistingImages = [];
+        if (existingImages) {
+            if (Array.isArray(existingImages)) {
+                parsedExistingImages = existingImages.map(img => typeof img === 'string' ? JSON.parse(img) : img);
+            } else {
+                try {
+                    parsedExistingImages = JSON.parse(existingImages);
+                } catch (e) {
+                    parsedExistingImages = [];
+                }
+            }
+        }
 
-    await ProductModel.findByIdAndUpdate(id, updatePayload);
-    res.status(200).json({ message: "Product updated" });
+        const updatePayload = {};
+
+        if (name !== undefined) updatePayload.name = name;
+        if (description !== undefined) updatePayload.description = description;
+        if (price !== undefined) updatePayload.price = Number(price);
+        if (stock !== undefined) updatePayload.stock = Number(stock);
+        if (category !== undefined) updatePayload.category = category;
+        if (parsedSizes !== undefined) updatePayload.sizes = parsedSizes;
+        if (discount !== undefined) updatePayload.discount = Number(discount);
+        if (discountType !== undefined) updatePayload.discountType = discountType;
+        if (onSale !== undefined) {
+            updatePayload.onSale = onSale === true || onSale === "true";
+        }
+        if (saleEndDate !== undefined) {
+            updatePayload.saleEndDate = saleEndDate ? new Date(saleEndDate) : null;
+        }
+        if (isFeatured !== undefined) {
+            updatePayload.isFeatured = isFeatured === true || isFeatured === "true";
+        }
+        if (status !== undefined) updatePayload.status = status;
+
+        // Handle new images
+        const uploadedImages = [...parsedExistingImages];
+        if (req.files && req.files.length > 0) {
+            console.log(`Processing ${req.files.length} new files for product ${id || 'new'}`);
+            for (const file of req.files) {
+                try {
+                    const result = await streamUpload(file.buffer);
+                    if (result && result.secure_url) {
+                        uploadedImages.push({
+                            url: result.secure_url,
+                            altText: name || "Product image"
+                        });
+                    }
+                } catch (uploadError) {
+                    console.error("Error uploading image to Cloudinary:", uploadError);
+                }
+            }
+        }
+
+        // Always update the images field if it was provided (even if empty)
+        // We check for req.body.existingImages (sent during update) 
+        // or req.files (sent during create/update)
+        if (req.body.existingImages !== undefined || (req.files && req.files.length > 0)) {
+            updatePayload.images = uploadedImages;
+            console.log(`Total images to save: ${uploadedImages.length}`);
+        }
+
+        const product = await ProductModel.findByIdAndUpdate(id, updatePayload, { new: true });
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        res.status(200).json({ message: "Product updated", product });
+    } catch (error) {
+        console.error("Error in updateProduct:", error);
+        res.status(500).json({ message: error.message || "Internal server error" });
+    }
 }
 
 async function updateProductStock(req, res) {

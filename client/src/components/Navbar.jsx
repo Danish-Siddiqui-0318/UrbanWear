@@ -1,6 +1,6 @@
 // components/Navbar.jsx
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import {
     pageBackground,
     pageText,
@@ -12,15 +12,48 @@ import {
 function Navbar({ variant = "public", name = "Admin", onLogout }) {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const [cartCount] = useState(0);
+    const [cartCount, setCartCount] = useState(0);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [navSearchQuery, setNavSearchQuery] = useState("");
     const navigate = useNavigate();
+
+    const handleNavSearch = (e) => {
+        e.preventDefault();
+        if (navSearchQuery.trim()) {
+            navigate(`/shop?q=${encodeURIComponent(navSearchQuery.trim())}`);
+            setIsSearchOpen(false);
+            setNavSearchQuery("");
+        }
+    };
+
+    const updateCartCount = () => {
+        const savedCart = localStorage.getItem("urbanwear_cart");
+        if (savedCart) {
+            const cart = JSON.parse(savedCart);
+            const count = cart.reduce((total, item) => total + item.quantity, 0);
+            setCartCount(count);
+        } else {
+            setCartCount(0);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
         };
+        
+        // Use a timeout or move to initial state to avoid synchronous setState in effect
+        setTimeout(() => {
+            updateCartCount();
+        }, 0);
+        
         window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+        window.addEventListener("cartUpdate", updateCartCount);
+        
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("cartUpdate", updateCartCount);
+        };
     }, []);
 
     const navLinks = [
@@ -74,6 +107,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
     }
 
     return (
+        <>
         <nav
             className={`fixed w-full z-50 transition-all duration-500 ${
                 scrolled
@@ -92,19 +126,30 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
 
                     <div className="hidden lg:flex items-center space-x-8">
                         {navLinks.map((link) => (
-                            <Link
+                            <NavLink
                                 key={link.name}
                                 to={link.path}
-                                className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
+                                className={({ isActive }) => `
+                                    ${pageText} transition-all duration-300 relative group
+                                    ${isActive ? 'text-emerald-500' : 'hover:text-emerald-500'}
+                                `}
                             >
-                                {link.name}
-                                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300 group-hover:w-full"></span>
-                            </Link>
+                                {({ isActive }) => (
+                                    <>
+                                        {link.name}
+                                        <span className={`
+                                            absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300
+                                            ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}
+                                        `}></span>
+                                    </>
+                                )}
+                            </NavLink>
                         ))}
                     </div>
 
                     <div className="hidden lg:flex items-center space-x-6">
                         <button
+                            onClick={() => setIsSearchOpen(true)}
                             className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
                         >
                             <svg
@@ -204,14 +249,17 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                 >
                     <div className="flex flex-col space-y-4 pb-4">
                         {navLinks.map((link) => (
-                            <Link
+                            <NavLink
                                 key={link.name}
                                 to={link.path}
-                                className={`${pageText} hover:text-emerald-500 transition-colors py-2`}
+                                className={({ isActive }) => `
+                                    ${pageText} transition-colors py-2 block
+                                    ${isActive ? 'text-emerald-500 font-bold border-l-2 border-emerald-500 pl-4' : 'hover:text-emerald-500'}
+                                `}
                                 onClick={() => setIsOpen(false)}
                             >
                                 {link.name}
-                            </Link>
+                            </NavLink>
                         ))}
                         <div className="flex space-x-4 pt-4 border-t border-gray-700">
                             <button className={`${pageText} hover:text-emerald-500`}>
@@ -275,6 +323,36 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                 </div>
             </div>
         </nav>
+
+        {/* Search Overlay */}
+        <div className={`fixed inset-0 z-[60] bg-black/90 backdrop-blur-xl transition-all duration-500 ${isSearchOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className="container mx-auto px-4 h-full flex flex-col items-center justify-center">
+                <button 
+                    onClick={() => setIsSearchOpen(false)}
+                    className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors"
+                >
+                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div className="w-full max-w-2xl animate-fade-in">
+                    <p className="text-emerald-500 text-xs font-bold uppercase tracking-[0.3em] text-center mb-6">Search UrbanGear</p>
+                    <form onSubmit={handleNavSearch} className="relative">
+                        <input 
+                            autoFocus={isSearchOpen}
+                            type="text" 
+                            value={navSearchQuery}
+                            onChange={(e) => setNavSearchQuery(e.target.value)}
+                            placeholder="Type to search..."
+                            className="w-full bg-transparent border-b-2 border-white/20 py-6 text-4xl md:text-6xl font-bold text-white placeholder:text-white/10 focus:outline-none focus:border-emerald-500 transition-colors"
+                        />
+                        <button type="submit" className="absolute right-0 bottom-6 text-emerald-500 hover:scale-110 transition-transform">
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                        </button>
+                    </form>
+                    <p className="mt-8 text-white/30 text-center text-sm">Hit Enter to see results in Shop</p>
+                </div>
+            </div>
+        </div>
+        </>
     );
 }
 

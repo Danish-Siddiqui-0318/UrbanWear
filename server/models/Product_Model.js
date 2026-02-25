@@ -38,13 +38,10 @@ const productSchema = mongoose.Schema(
             trim: true,
         },
 
-        sizes: [
-            {
-                type: String,
-                enum: ["sm", "md", "lg", "xl"],
-                required: true,
-            }
-        ],
+        sizes: {
+            type: [String],
+            required: true,
+        },
 
         images: [
             {
@@ -94,12 +91,10 @@ const productSchema = mongoose.Schema(
                     trim: true,
                     default: "",
                 },
-                sizes: [
-                    {
-                        type: String,
-                        enum: ["sm", "md", "lg", "xl"],
-                    }
-                ],
+                sizes: {
+                     type: [String],
+                     required: true,
+                 },
                 price: {
                     type: Number,
                     min: 0,
