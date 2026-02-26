@@ -67,7 +67,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
     if (variant === "admin") {
         return (
             <header
-                className={`${pageBackground} ${pageText} border-b ${primaryBorder} sticky top-0 z-40`}
+                className={`${pageBackground} ${pageText} text-white border-b ${primaryBorder} sticky top-0 z-40`}
             >
                 <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-3">
