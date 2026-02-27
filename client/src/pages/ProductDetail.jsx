@@ -137,7 +137,7 @@ function ProductDetail() {
                                 onMouseLeave={() => setShowZoom(false)}
                             >
                                 <img 
-                                    src={(product.images && product.images[activeImage]?.url) || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop"} 
+                                    src={(product.images && product.images.length > 0 && product.images[activeImage]?.url) || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop"} 
                                     alt={product.name}
                                     className={`w-full h-full object-cover animate-fade-in transition-transform duration-300 ${showZoom ? 'scale-[2]' : 'scale-100'}`}
                                     style={{

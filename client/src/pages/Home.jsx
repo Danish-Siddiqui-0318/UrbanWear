@@ -1,6 +1,6 @@
 // pages/Home.jsx
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -8,6 +8,7 @@ import { pageBackground, pageText, primaryGradient, mutedText } from '../theme/c
 import { API_BASE_URL } from '../config/api';
 
 function Home() {
+    const location = useLocation();
     const [isVisible, setIsVisible] = useState({});
     const [counts, setCounts] = useState({ customers: 0, products: 0, years: 0, stores: 0 });
     const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -74,12 +75,15 @@ function Home() {
             try {
                 setLoadingFeatured(true);
                 const response = await axios.get(`${API_BASE_URL}/products/products`, {
-                    params: { isFeatured: true, limit: 4 },
+                    params: { isFeatured: true, limit: 4, _t: Date.now() },
                 });
-                const products = response.data.products || [];
-
+                const allProducts = response.data.products || [];
+                
+                // CRITICAL SAFETY FILTER: Only keep products where isFeatured is truly true
+                const filteredProducts = allProducts.filter(p => p.isFeatured === true);
+                
                 setFeaturedProducts(
-                    products.map((product) => ({
+                    filteredProducts.map((product) => ({
                         id: product._id,
                         name: product.name,
                         price: product.price,
@@ -89,6 +93,7 @@ function Home() {
                                 : "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop",
                         category: product.category,
                         isNew: product.onSale,
+                        isFeatured: product.isFeatured,
                     }))
                 );
             } catch (error) {
@@ -121,7 +126,7 @@ function Home() {
         loadFeatured();
         loadAnnouncement();
         loadHeroSlides();
-    }, []);
+    }, [location.pathname]);
 
     useEffect(() => {
         if (!heroSlides || heroSlides.length <= 1) {
@@ -164,21 +169,6 @@ function Home() {
             rating: 5,
             image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop'
         }
-    ];
-
-    const highlights = [
-        {
-            title: 'Free Shipping',
-            subtitle: 'On orders over Rs.8000',
-        },
-        {
-            title: 'Sustainable Fabrics',
-            subtitle: 'Ethically sourced materials',
-        },
-        {
-            title: 'Easy Returns',
-            subtitle: '30-day hassle-free returns',
-        },
     ];
 
     const activeSlide = heroSlides && heroSlides.length > 0 ? heroSlides[activeHeroIndex] : null;
@@ -275,42 +265,6 @@ function Home() {
                 <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
                     <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
                         <div className="w-1 h-2 bg-white rounded-full mt-2 animate-scroll"></div>
-                    </div>
-                </div>
-            </section>
-
-            <section className="px-4 -mt-10 relative z-20">
-                <div className="container mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {highlights.map((item, index) => (
-                            <div
-                                key={item.title}
-                                className="rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 px-5 py-4 flex items-center gap-4 shadow-lg/30 transition-transform duration-500 hover:-translate-y-1 hover:shadow-emerald-500/20 animate-glow"
-                                style={{ animationDelay: `${index * 150}ms` }}
-                            >
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950">
-                                    {index === 0 && (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M5 6h14M7 14h10M9 18h6" />
-                                        </svg>
-                                    )}
-                                    {index === 1 && (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2a7 7 0 017 7c0 4-4 9-7 11-3-2-7-7-7-11a7 7 0 017-7z" />
-                                        </svg>
-                                    )}
-                                    {index === 2 && (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h18M6 7v10a2 2 0 002 2h8a2 2 0 002-2V7" />
-                                        </svg>
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold">{item.title}</p>
-                                    <p className={`text-xs ${pageText}`}>{item.subtitle}</p>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </section>
@@ -455,11 +409,11 @@ function Home() {
                                         <p className={`text-sm ${mutedText} mb-1`}>{product.category}</p>
                                         <h3 className="font-semibold mb-2">{product.name}</h3>
                                         <div className="flex items-center justify-between">
-                                        <span className="text-xl font-bold text-emerald-500">Rs.{product.price}</span>
-                                        <div className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 group-hover:scale-105">
-                                            View Details
+                                            <span className="text-xl font-bold text-emerald-500">Rs.{product.price}</span>
+                                            <div className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 group-hover:scale-105">
+                                                View Details
+                                            </div>
                                         </div>
-                                    </div>
                                     </div>
                                 </Link>
                             ))
@@ -576,7 +530,7 @@ function Home() {
 
             <Footer />
 
-            <style jsx>{`
+            <style>{`
                 @keyframes kenBurns {
                     0% { transform: scale(1); }
                     100% { transform: scale(1.1); }

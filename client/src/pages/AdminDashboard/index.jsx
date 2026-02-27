@@ -93,7 +93,7 @@ function AdminDashboard() {
             setLoadingProducts(true);
             setProductsError("");
             const response = await axios.get(`${API_BASE_URL}/products/products`, {
-                params: { page: 1, limit: 100 },
+                params: { page: 1, limit: 100, status: 'all' },
             });
             setProducts(response.data.products || []);
         } catch (error) {

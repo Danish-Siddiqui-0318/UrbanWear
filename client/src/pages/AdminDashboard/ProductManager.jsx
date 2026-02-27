@@ -133,14 +133,14 @@ const ProductManager = ({
         formData.append("category", categoryInput);
         formData.append("sizes", JSON.stringify(selectedSizes));
         formData.append("discount", discountInput || "0");
-        formData.append("isFeatured", isFeaturedInput ? "true" : "false");
         formData.append("discountType", discountTypeInput);
         formData.append("onSale", onSaleInput ? "true" : "false");
         if (saleEndDateInput) formData.append("saleEndDate", saleEndDateInput);
         
+        formData.append("isFeatured", isFeaturedInput ? "true" : "false");
+        
         // CRITICAL: Ensure we are sending all files in the imagesInput array
         if (imagesInput && imagesInput.length > 0) {
-            console.log(`Sending ${imagesInput.length} new images to server`);
             imagesInput.forEach((file) => {
                 formData.append("images", file);
             });
@@ -153,14 +153,13 @@ const ProductManager = ({
             }
             try {
                 setCreatingProduct(true);
-                const response = await axios.post(`${API_BASE_URL}/products/add_product`, formData, { 
+                await axios.post(`${API_BASE_URL}/products/add_product`, formData, { 
                     headers: { 
                         Authorization: `Bearer ${token}`, 
                         "Content-Type": "multipart/form-data" 
                     } 
                 });
-                console.log("Create response:", response.data);
-                setCreateSuccess("Product created successfully with " + response.data.product.images.length + " images.");
+                setCreateSuccess("Product created successfully.");
                 resetForm();
                 await fetchProducts();
             } catch (error) {
@@ -175,19 +174,17 @@ const ProductManager = ({
             }
             
             // CRITICAL: Send existing images that were not removed
-            console.log(`Sending ${existingImages.length} existing images to server`);
             formData.append("existingImages", JSON.stringify(existingImages));
 
             try {
                 setCreatingProduct(true);
-                const response = await axios.put(`${API_BASE_URL}/products/products/${editingProductId}`, formData, { 
+                await axios.put(`${API_BASE_URL}/products/products/${editingProductId}`, formData, { 
                     headers: { 
                         Authorization: `Bearer ${token}`,
                         "Content-Type": "multipart/form-data"
                     } 
                 });
-                console.log("Update response:", response.data);
-                setCreateSuccess("Product updated successfully. Now has " + response.data.product.images.length + " images.");
+                setCreateSuccess("Product updated successfully.");
                 resetForm();
                 await fetchProducts();
             } catch (error) {

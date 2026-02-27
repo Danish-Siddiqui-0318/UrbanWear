@@ -129,30 +129,6 @@ function Footer({ variant = "public" }) {
                     ))}
                 </div>
 
-                <div className="border-t border-gray-800 pt-8 pb-4">
-                    <div className="max-w-md mx-auto text-center">
-                        <h3 className="text-white font-semibold mb-2">
-                            Join the Urban Family
-                        </h3>
-                        <p className={`${mutedText} text-sm mb-4`}>
-                            Subscribe to get special offers, free giveaways, and exclusive
-                            deals.
-                        </p>
-                        <form
-                            className="flex gap-2"
-                            onSubmit={(e) => e.preventDefault()}
-                        >
-                            <input
-                                type="email"
-                                placeholder="Enter your email"
-                                className="flex-1 px-4 py-2 bg-white/5 border border-gray-700 rounded-lg focus:border-emerald-500 outline-none text-sm"
-                            />
-                            <button className="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 hover:scale-105">
-                                Subscribe
-                            </button>
-                        </form>
-                    </div>
-                </div>
 
                 <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
                     <p className={`${mutedText} text-sm`}>

@@ -116,9 +116,9 @@ async function addProduct(req, res) {
             sizes: parsedSizes,
             discount: discount ? Number(discount) : 0,
             discountType: discountType || "percent",
-            onSale: onSale === "true" || onSale === true,
+            onSale: String(onSale).toLowerCase() === "true",
             saleEndDate: saleEndDate ? new Date(saleEndDate) : null,
-            isFeatured: isFeatured === "true" || isFeatured === true,
+            isFeatured: String(isFeatured).toLowerCase() === "true",
             status: status || "active",
             images: uploadedImages,
         });
@@ -142,18 +142,55 @@ async function getAllProducts(req, res) {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const isFeatured = req.query.isFeatured;
+        const category = req.query.category;
+        const status = req.query.status;
 
         const skip = (page - 1) * limit;
 
-        const totalProducts = await ProductModel.countDocuments();
+        // Build filter object
+        const filter = {};
+        
+        // Handle isFeatured filter
+        if (req.query.isFeatured !== undefined) {
+            const isFeaturedBool = String(req.query.isFeatured).toLowerCase() === 'true';
+            filter.isFeatured = isFeaturedBool;
+        }
+        
+        // Handle category filter
+        if (category && category !== 'all') {
+            filter.category = category;
+        }
+        
+        // Handle status filter
+        if (status === 'all') {
+            // Admin wants to see everything
+            // Note: In a real app, you'd check for admin privileges here
+        } else if (status) {
+            filter.status = status;
+        } else {
+            // Default for storefront: only show active products
+            // This is safer than showing hidden/out-of-stock items by default
+            filter.status = 'active';
+        }
 
-        const products = await ProductModel.find()
+        const totalProducts = await ProductModel.countDocuments(filter);
+        
+        let products = await ProductModel.find(filter)
             .skip(skip)
             .limit(limit)
             .sort({createdAt: -1});
 
+        // CRITICAL FALLBACK: Manual array filtering
+        // If the database query somehow returned products that don't match the boolean filter, 
+        // we remove them here manually before sending to client.
+        if (req.query.isFeatured !== undefined) {
+            const isFeaturedBool = String(req.query.isFeatured).toLowerCase() === 'true';
+            products = products.filter(p => p.isFeatured === isFeaturedBool);
+        }
+
         return res.status(200).json({
-            totalProducts,
+            totalProducts: products.length, // Update count to match filtered list
             currentPage: page,
             totalPages: Math.ceil(totalProducts / limit),
             products
@@ -183,104 +220,94 @@ async function getSingleProduct(req, res) {
 async function updateProduct(req, res) {
     try {
         const id = req.params.id;
-        const {
-            name,
-            description,
-            price,
-            stock,
-            category,
-            discount,
-            discountType,
-            onSale,
-            saleEndDate,
-            isFeatured,
-            status,
-        } = req.body;
+        const body = req.body;
 
-        // Handle sizes
-        let sizes = req.body.sizes;
-        let parsedSizes;
-        if (sizes) {
-            if (Array.isArray(sizes)) {
-                parsedSizes = sizes;
-            } else {
-                try {
-                    parsedSizes = JSON.parse(sizes);
-                } catch (e) {
-                    parsedSizes = sizes.split(',').map(s => s.trim());
-                }
-            }
-        }
-
-        // Handle existing images
-        let existingImages = req.body.existingImages;
-        let parsedExistingImages = [];
-        if (existingImages) {
-            if (Array.isArray(existingImages)) {
-                parsedExistingImages = existingImages.map(img => typeof img === 'string' ? JSON.parse(img) : img);
-            } else {
-                try {
-                    parsedExistingImages = JSON.parse(existingImages);
-                } catch (e) {
-                    parsedExistingImages = [];
-                }
-            }
-        }
-
-        const updatePayload = {};
-
-        if (name !== undefined) updatePayload.name = name;
-        if (description !== undefined) updatePayload.description = description;
-        if (price !== undefined) updatePayload.price = Number(price);
-        if (stock !== undefined) updatePayload.stock = Number(stock);
-        if (category !== undefined) updatePayload.category = category;
-        if (parsedSizes !== undefined) updatePayload.sizes = parsedSizes;
-        if (discount !== undefined) updatePayload.discount = Number(discount);
-        if (discountType !== undefined) updatePayload.discountType = discountType;
-        if (onSale !== undefined) {
-            updatePayload.onSale = onSale === true || onSale === "true";
-        }
-        if (saleEndDate !== undefined) {
-            updatePayload.saleEndDate = saleEndDate ? new Date(saleEndDate) : null;
-        }
-        if (isFeatured !== undefined) {
-            updatePayload.isFeatured = isFeatured === true || isFeatured === "true";
-        }
-        if (status !== undefined) updatePayload.status = status;
-
-        // Handle new images
-        const uploadedImages = [...parsedExistingImages];
-        if (req.files && req.files.length > 0) {
-            console.log(`Processing ${req.files.length} new files for product ${id || 'new'}`);
-            for (const file of req.files) {
-                try {
-                    const result = await streamUpload(file.buffer);
-                    if (result && result.secure_url) {
-                        uploadedImages.push({
-                            url: result.secure_url,
-                            altText: name || "Product image"
-                        });
-                    }
-                } catch (uploadError) {
-                    console.error("Error uploading image to Cloudinary:", uploadError);
-                }
-            }
-        }
-
-        // Always update the images field if it was provided (even if empty)
-        // We check for req.body.existingImages (sent during update) 
-        // or req.files (sent during create/update)
-        if (req.body.existingImages !== undefined || (req.files && req.files.length > 0)) {
-            updatePayload.images = uploadedImages;
-            console.log(`Total images to save: ${uploadedImages.length}`);
-        }
-
-        const product = await ProductModel.findByIdAndUpdate(id, updatePayload, { new: true });
+        const product = await ProductModel.findById(id);
         if (!product) {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        res.status(200).json({ message: "Product updated", product });
+        // Update basic fields if provided
+        if (body.name !== undefined) product.name = body.name;
+        if (body.description !== undefined) product.description = body.description;
+        if (body.price !== undefined) product.price = Number(body.price);
+        if (body.stock !== undefined) product.stock = Number(body.stock);
+        if (body.category !== undefined) product.category = body.category;
+        if (body.discount !== undefined) product.discount = Number(body.discount);
+        if (body.discountType !== undefined) product.discountType = body.discountType;
+        if (body.status !== undefined) product.status = body.status;
+
+        // Strict Boolean Conversions
+        if (body.onSale !== undefined) {
+            product.onSale = String(body.onSale).toLowerCase() === 'true';
+        }
+        if (body.isFeatured !== undefined) {
+            product.isFeatured = String(body.isFeatured).toLowerCase() === 'true';
+        }
+        
+        if (body.saleEndDate !== undefined) {
+            product.saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
+        }
+
+        // Handle sizes
+        if (body.sizes) {
+            let parsedSizes;
+            if (Array.isArray(body.sizes)) {
+                parsedSizes = body.sizes;
+            } else {
+                try {
+                    parsedSizes = JSON.parse(body.sizes);
+                } catch (e) {
+                    parsedSizes = body.sizes.split(',').map(s => s.trim());
+                }
+            }
+            product.sizes = parsedSizes;
+        }
+
+        // Handle Images
+        let existingImages = [];
+        if (body.existingImages) {
+            try {
+                existingImages = typeof body.existingImages === 'string' 
+                    ? JSON.parse(body.existingImages) 
+                    : body.existingImages;
+                
+                // If it's an array of strings (JSON strings), parse each one
+                if (Array.isArray(existingImages)) {
+                    existingImages = existingImages.map(img => typeof img === 'string' ? JSON.parse(img) : img);
+                }
+            } catch (e) {
+                console.error("Error parsing existing images:", e);
+            }
+        }
+
+        // Process new images
+        const newImages = [];
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
+                try {
+                    const result = await streamUpload(file.buffer);
+                    if (result && result.secure_url) {
+                        newImages.push({
+                            url: result.secure_url,
+                            altText: product.name || "Product image"
+                        });
+                    }
+                } catch (uploadError) {
+                    console.error("Error uploading new image:", uploadError);
+                }
+            }
+        }
+
+        // Only update images if either existingImages or new files were provided
+        // This prevents accidentally clearing images if the field is missing in a partial update
+        if (body.existingImages !== undefined || (req.files && req.files.length > 0)) {
+            product.images = [...existingImages, ...newImages];
+        }
+
+        await product.save();
+        res.status(200).json({ message: "Product updated successfully", product });
+
     } catch (error) {
         console.error("Error in updateProduct:", error);
         res.status(500).json({ message: error.message || "Internal server error" });
