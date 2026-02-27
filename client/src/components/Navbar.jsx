@@ -58,9 +58,9 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
 
     const navLinks = [
         { name: "Home", path: "/" },
-        { name: "Shop", path: "/shop" },
-        { name: "New Arrivals", path: "/new-arrivals" },
-        { name: "Collections", path: "/collections" },
+        { name: "Shirt", path: "/shirt" },
+        { name: "OverSized TShirts", path: "/OverSized_TShirts" },
+        { name: "Trouser", path: "/trousers" },
         { name: "Sale", path: "/sale" },
     ];
 

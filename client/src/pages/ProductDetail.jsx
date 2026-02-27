@@ -85,7 +85,7 @@ function ProductDetail() {
                 <Navbar />
                 <main className="pt-32 pb-20 px-4 text-center">
                     <h1 className="text-2xl font-bold mb-4">{error || "Product not found"}</h1>
-                    <Link to="/shop" className="text-emerald-500 hover:underline">Back to Shop</Link>
+                    <Link to="/shirt" className="text-emerald-500 hover:underline"> Shirt</Link>
                 </main>
                 <Footer />
             </div>
@@ -102,7 +102,7 @@ function ProductDetail() {
                     <nav className="flex items-center gap-2 text-xs mb-8 text-neutral-500 uppercase tracking-widest">
                         <Link to="/" className="hover:text-emerald-500 transition-colors">Home</Link>
                         <span>/</span>
-                        <Link to="/shop" className="hover:text-emerald-500 transition-colors">Shop</Link>
+                        <Link to="/shirt" className="hover:text-emerald-500 transition-colors">Shirts</Link>
                         <span>/</span>
                         <span className="text-neutral-300">{product.category}</span>
                     </nav>
