@@ -68,7 +68,7 @@ const OrderManager = ({ token, orders, loadingOrders, ordersError, fetchOrders }
                             <div className="mt-2 flex items-center gap-2">
                                 <span className={mutedText}>Status:</span>
                                 <select 
-                                    value={selectedOrder.status}
+                                    value={selectedOrder.status.toLowerCase()}
                                     disabled={updatingStatus}
                                     onChange={(e) => handleUpdateStatus(selectedOrder._id, e.target.value)}
                                     className={`rounded-lg border ${primaryBorder} bg-white px-2 py-1 text-[11px] outline-none focus:border-neutral-900`}

@@ -2,49 +2,6 @@ const UserModel = require('../models/UserModel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// register account
-
-async function registerUser(req, res) {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-        return res.status(400).json({
-            success: false,
-            message: "Please provide name, email and password"
-        });
-    }
-
-    const userExist = await UserModel.findOne({ email });
-    if (userExist) {
-        return res.status(400).json({
-            success: false,
-            message: "User already exists"
-        });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(password, salt);
-
-    const userData = await UserModel.create({
-        name,
-        email,
-        password: encryptedPassword
-    });
-
-    const userResponse = {
-        _id: userData._id,
-        name: userData.name,
-        email: userData.email,
-        isActive: userData.isActive
-    };
-
-    return res.status(201).json({
-        success: true,
-        message: "Account created successfully.",
-        data: userResponse
-    });
-}
-
 async function loginUser(req, res) {
     try {
         const { email, password, role } = req.body;
@@ -56,64 +13,57 @@ async function loginUser(req, res) {
             });
         }
 
+        // 1. Check if it's the environment-configured admin
         if (role === "admin") {
-            console.log("ADMIN_EMAIL:", JSON.stringify(process.env.ADMIN_EMAIL));
-            console.log("ADMIN_PASSWORD:", JSON.stringify(process.env.ADMIN_PASSWORD));
             if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
                 return res.status(500).json({
                     success: false,
-                    message: "Admin credentials are not configured"
+                    message: "Admin configuration error"
                 });
             }
 
-            if (
-                email !== process.env.ADMIN_EMAIL ||
-                password !== process.env.ADMIN_PASSWORD
-            ) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid admin credentials"
-                });
-            }
+            if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
+                const token = jwt.sign(
+                    {
+                        email: process.env.ADMIN_EMAIL,
+                        role: "admin"
+                    },
+                    process.env.JWT_SECRET,
+                    { expiresIn: "7d" }
+                );
 
-            const token = jwt.sign(
-                {
-                    email: process.env.ADMIN_EMAIL,
+                return res.status(200).json({
+                    success: true,
+                    message: "Admin login successful",
+                    token,
                     role: "admin"
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: "7d" }
-            );
-
-            return res.status(200).json({
-                success: true,
-                message: "Admin login successfully.",
-                token,
-                role: "admin"
-            });
+                });
+            }
         }
 
-        const user = await UserModel.findOne({ email });
-        if (!user) {
-            return res.status(400).json({
+        // 2. Fallback to database admins (if any)
+        const admin = await UserModel.findOne({ email, role: 'admin' });
+        if (!admin) {
+            return res.status(401).json({
                 success: false,
-                message: "User not found"
+                message: "Invalid credentials"
             });
         }
 
-        const isMatched = await bcrypt.compare(password, user.password);
+        const isMatched = await bcrypt.compare(password, admin.password);
         if (!isMatched) {
-            return res.status(400).json({
+            return res.status(401).json({
                 success: false,
-                message: "Password incorrect"
+                message: "Invalid credentials"
             });
         }
 
         const token = jwt.sign(
             {
-                _id: user._id,
-                name: user.name,
-                email: user.email
+                _id: admin._id,
+                name: admin.name,
+                email: admin.email,
+                role: "admin"
             },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
@@ -121,21 +71,24 @@ async function loginUser(req, res) {
 
         return res.status(200).json({
             success: true,
-            message: "Login successfully.",
+            message: "Login successful",
             token,
-            role: "user",
-            name: user.name
+            role: "admin",
+            name: admin.name
         });
     } catch (error) {
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ 
+            success: false,
+            message: error.message 
+        });
     }
 }
 
-async function getUser(req, res) {
-    if (!req.user) {
+async function getAdminProfile(req, res) {
+    if (!req.user || req.user.role !== 'admin') {
         return res.status(401).json({
             success: false,
-            message: "User Not Authorized"
+            message: "Not authorized"
         });
     }
 
@@ -145,17 +98,7 @@ async function getUser(req, res) {
     });
 }
 
-async function updateUser(req, res) {
-    var id = req.params.id;
-    var updatedData = req.body;
-
-    await UserModel.findByIdAndUpdate(id, updatedData)
-    res.status(200).json({message: "Data Updated"})
-}
-
 module.exports = {
-    registerUser,
     loginUser,
-    updateUser,
-    getUser,
+    getAdminProfile,
 }

@@ -230,9 +230,12 @@ function Home() {
         async function loadHeroSlides() {
             try {
                 const response = await axios.get(`${API_BASE_URL}/hero-slides`);
-                setHeroSlides(response.data.slides || []);
+                if (response.data.success) {
+                    setHeroSlides(response.data.slides || []);
+                }
                 setActiveHeroIndex(0);
-            } catch {
+            } catch (error) {
+                console.error("Failed to fetch hero slides", error);
                 setHeroSlides([]);
             }
         }

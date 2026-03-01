@@ -155,8 +155,8 @@ const ProductManager = ({
                 setCreatingProduct(true);
                 await axios.post(`${API_BASE_URL}/products/add_product`, formData, { 
                     headers: { 
-                        Authorization: `Bearer ${token}`, 
-                        "Content-Type": "multipart/form-data" 
+                        Authorization: `Bearer ${token}`
+                        // Axios will set multipart/form-data with boundary automatically
                     } 
                 });
                 setCreateSuccess("Product created successfully.");
@@ -180,8 +180,8 @@ const ProductManager = ({
                 setCreatingProduct(true);
                 await axios.put(`${API_BASE_URL}/products/products/${editingProductId}`, formData, { 
                     headers: { 
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "multipart/form-data"
+                        Authorization: `Bearer ${token}`
+                        // Axios will set multipart/form-data with boundary automatically
                     } 
                 });
                 setCreateSuccess("Product updated successfully.");

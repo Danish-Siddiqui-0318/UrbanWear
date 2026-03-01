@@ -1,4 +1,5 @@
 const OrderModel = require("../models/OrderModel");
+const ProductModel = require("../models/Product_Model");
 const mongoose = require("mongoose");
 
 async function createOrder(req, res) {
@@ -336,27 +337,37 @@ async function updateOrderStatus(req, res) {
         const id = req.params.id;
         const { status, paymentStatus } = req.body;
 
-        const order = await OrderModel.findById(id);
-        if (!order) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid order ID format" });
+        }
+
+        const updateData = {};
+        if (status) updateData.status = String(status).toLowerCase();
+        if (paymentStatus) updateData.paymentStatus = String(paymentStatus).toLowerCase();
+
+        // Use direct MongoDB collection update to bypass ALL Mongoose validation
+        const result = await OrderModel.collection.updateOne(
+            { _id: new mongoose.Types.ObjectId(id) },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
             return res.status(404).json({ message: "Order not found" });
         }
 
-        if (status) {
-            order.status = status;
-        }
-        if (paymentStatus) {
-            order.paymentStatus = paymentStatus;
-        }
-
-        await order.save();
+        // Fetch the updated order to return it (using lean to avoid any validation)
+        const updatedOrder = await OrderModel.findById(id).lean();
 
         return res.status(200).json({
             success: true,
-            order,
+            order: updatedOrder,
         });
     } catch (error) {
+        console.error("CRITICAL NATIVE UPDATE ERROR:", error);
         return res.status(500).json({
-            message: error.message || "Failed to update order",
+            message: "Failed to update order",
+            error: error.message,
+            stack: error.stack
         });
     }
 }

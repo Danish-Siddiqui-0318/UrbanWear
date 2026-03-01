@@ -62,7 +62,8 @@ function TrackOrder() {
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
-            case 'delivered': return 'text-emerald-500';
+            case 'delivered':
+            case 'completed': return 'text-emerald-500';
             case 'cancelled': return 'text-red-500';
             case 'shipped': return 'text-blue-500';
             case 'processing': return 'text-amber-500';

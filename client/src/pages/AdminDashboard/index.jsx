@@ -200,13 +200,16 @@ function AdminDashboard() {
 
     useEffect(() => {
         const loadAll = async () => {
-            await fetchProductsData();
-            await fetchOrdersData();
-            await fetchCategoriesData();
-            await fetchAnnouncementData();
-            await fetchHeroSlidesData();
-            await fetchOrderStatsData();
-            await fetchProductPerformanceData();
+            // Run all fetches in parallel for better performance and to avoid one blocking another
+            Promise.allSettled([
+                fetchProductsData(),
+                fetchOrdersData(),
+                fetchCategoriesData(),
+                fetchAnnouncementData(),
+                fetchHeroSlidesData(),
+                fetchOrderStatsData(),
+                fetchProductPerformanceData()
+            ]);
         };
         loadAll();
         // eslint-disable-next-line react-hooks/exhaustive-deps

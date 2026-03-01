@@ -1,39 +1,28 @@
-var mongoose = require('mongoose')
-const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-// const phoneRegex = /^03[0-9]{9}$/;
+const mongoose = require('mongoose');
 
-
-var userSchema = mongoose.Schema({
+const userSchema = mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Please enter your name.']
+        required: [true, 'Admin name is required.']
     },
     email: {
         type: String,
-        required: [true, 'Please enter your email.'],
-        unique: [true, "email should be unique."],
-        lowercase: [true, "email should be lowercase."],
-        trim: true,
-        match: [emailRegex, "Email should be valid."]
+        required: [true, 'Admin email is required.'],
+        unique: true,
+        lowercase: true,
+        trim: true
     },
-    // phone: {
-    //     type: String,
-    //     required: [true, 'Phone number is required.'],
-    //     unique: true,
-    //     match: [phoneRegex, "Must be a valid number."]
-    // },
     password: {
         type: String,
-        required: [true, 'password is required'],
-        trim: true,
-        minLength: 6
+        required: [true, 'Admin password is required'],
+        trim: true
     },
-    isActive: {
+    role: {
         type: String,
-        enum: ['active', 'suspended'],
-        default: 'active'
+        default: 'admin',
+        enum: ['admin']
     }
-})
+}, { timestamps: true });
 
 const UserModel = mongoose.model("Users", userSchema);
 
