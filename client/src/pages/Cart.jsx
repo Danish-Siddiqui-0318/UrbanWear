@@ -37,7 +37,7 @@ function Cart() {
                             Explore our latest drops and find your style.
                         </p>
                         <Link 
-                            to="/shop" 
+                            to="/shirt" 
                             className={`inline-block px-10 py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-bold rounded-2xl hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300 hover:scale-105`}
                         >
                             Start Shopping
@@ -62,7 +62,7 @@ function Cart() {
                             {cart.map((item) => (
                                 <div 
                                     key={`${item._id}-${item.size}`} 
-                                    className={`flex flex-col sm:flex-row gap-6 p-6 rounded-3xl border ${secondaryBorder} bg-white/5 group relative overflow-hidden transition-all duration-500 hover:border-emerald-500/30`}
+                                    className={`flex flex-col sm:flex-row gap-6 p-6 rounded-3xl border ${secondaryBorder} bg-neutral-50 group relative overflow-hidden transition-all duration-500 hover:border-emerald-500/30`}
                                 >
                                     <div className="w-full sm:w-32 aspect-[4/5] rounded-2xl overflow-hidden bg-neutral-900 flex-shrink-0">
                                         <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
@@ -72,14 +72,14 @@ function Cart() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-1">{item.category}</p>
-                                                <h3 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-500 transition-colors">{item.name}</h3>
+                                                <h3 className="text-lg font-bold text-neutral-900 mb-1 group-hover:text-emerald-500 transition-colors">{item.name}</h3>
                                                 <p className={`${mutedText} text-xs font-bold uppercase tracking-wider`}>Size: {item.size}</p>
                                             </div>
-                                            <p className="text-lg font-bold text-white">Rs.{item.price * item.quantity}</p>
+                                            <p className="text-lg font-bold text-neutral-900">Rs.{item.price * item.quantity}</p>
                                         </div>
 
                                         <div className="flex items-center justify-between mt-6 sm:mt-0">
-                                            <div className="flex items-center rounded-xl border border-white/10 bg-white/5 h-10 px-1">
+                                            <div className="flex items-center rounded-xl border border-neutral-200 bg-neutral-50 h-10 px-1">
                                                 <button 
                                                     onClick={() => updateQuantity(item._id, item.size, item.quantity - 1)}
                                                     className="w-8 h-full flex items-center justify-center hover:text-emerald-500 transition-colors"
@@ -110,7 +110,7 @@ function Cart() {
 
                         {/* Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-white/5 sticky top-32`}>
+                            <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-neutral-50 sticky top-32`}>
                                 <h2 className="text-xl font-bold mb-6">Order Summary</h2>
                                 
                                 <div className="space-y-4 mb-8 text-sm">
@@ -127,7 +127,7 @@ function Cart() {
                                             Free shipping on orders over Rs.8000
                                         </p>
                                     )}
-                                    <div className="pt-4 border-t border-white/5 flex justify-between text-lg">
+                                    <div className="pt-4 border-t border-neutral-200 flex justify-between text-lg">
                                         <span className="font-bold">Total</span>
                                         <span className="font-bold text-emerald-500">Rs.{total}</span>
                                     </div>

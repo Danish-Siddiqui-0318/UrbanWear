@@ -26,6 +26,7 @@ function AdminDashboard() {
     const token = localStorage.getItem("token");
 
     const [activeTab, setActiveTab] = useState("overview");
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Products State
     const [products, setProducts] = useState([]);
@@ -224,7 +225,9 @@ function AdminDashboard() {
                 activeTab={activeTab} 
                 setActiveTab={setActiveTab} 
                 name={name} 
-                onLogout={handleLogout} 
+                onLogout={handleLogout}
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
             />
 
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -232,11 +235,18 @@ function AdminDashboard() {
                     <div className="mx-auto max-w-6xl space-y-8">
                         {/* Header */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    className="md:hidden inline-flex items-center justify-center rounded-lg border border-neutral-200 bg-white p-2 text-neutral-700 hover:bg-neutral-50"
+                                    onClick={() => setSidebarOpen(true)}
+                                    aria-label="Open menu"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                                </button>
                                 <h1 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl capitalize">
                                     {activeTab === "overview" ? `Welcome back, ${name}` : activeTab}
                                 </h1>
-                                <p className={`text-sm ${mutedText} mt-1`}>
+                                <p className={`text-sm ${mutedText} mt-1 hidden md:block`}>
                                     {activeTab === "overview" 
                                         ? "Here is what is happening with your store today." 
                                         : `Manage your ${activeTab} and settings.`}

@@ -173,6 +173,14 @@ function Home() {
 
     const activeSlide = heroSlides && heroSlides.length > 0 ? heroSlides[activeHeroIndex] : null;
 
+    const getCategoryRoute = (name) => {
+        const key = (name || "").toLowerCase();
+        if (key.includes("hoodie")) return "/shirt";
+        if (key.includes("t-shirt") || key.includes("tshirts") || key.includes("shirt")) return "/OverSized_TShirts";
+        if (key.includes("trouser") || key.includes("pants")) return "/trousers";
+        return "/sale";
+    };
+
     return (
         <div className={`min-h-screen ${pageBackground} ${pageText}`}>
             <Navbar />
@@ -186,7 +194,7 @@ function Home() {
             <section 
                 ref={heroRef}
                 id="hero"
-                className="relative h-screen flex items-center justify-center overflow-hidden"
+                className="relative min-h-[70vh] md:h-screen flex items-center justify-center overflow-hidden"
             >
                 <div className="absolute inset-0">
                     <img 
@@ -204,7 +212,7 @@ function Home() {
                 <div className={`relative z-10 text-center px-4 transform transition-all duration-1000 ${
                     isVisible.hero ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                 }`}>
-                    <h1 className="text-5xl md:text-7xl font-bold mb-4 animate-slide-down">
+                    <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 animate-slide-down">
                         {activeSlide && activeSlide.title ? (
                             activeSlide.title
                         ) : (
@@ -216,7 +224,7 @@ function Home() {
                             </>
                         )}
                     </h1>
-                    <p className={`text-xl md:text-2xl mb-8 max-w-2xl mx-auto ${pageText} animate-slide-up text-cyan-50`}>
+                    <p className={`text-base sm:text-lg md:text-2xl mb-8 max-w-2xl mx-auto ${pageText} animate-slide-up text-cyan-50`}>
                         {activeSlide && activeSlide.subtitle
                             ? activeSlide.subtitle
                             : "Discover the latest in streetwear fashion. Sustainable, comfortable, and always on trend."}
@@ -225,81 +233,38 @@ function Home() {
                         {(activeSlide && activeSlide.buttonLabel && activeSlide.buttonLink) ? (
                             <Link 
                                 to={activeSlide.buttonLink}
-                                className={`px-8 py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
+                                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
                             >
                                 {activeSlide.buttonLabel}
                             </Link>
                         ) : (
                             <Link 
                                 to="/shop" 
-                                className={`px-8 py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
+                                className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
                             >
                                 Shop Now
                             </Link>
                         )}
                         <Link 
                             to="/collections" 
-                            className="px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                            className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-white/30 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300 hover:scale-105 backdrop-blur-sm"
                         >
                             View Collections
                         </Link>
                     </div>
 
-                    {heroSlides && heroSlides.length > 1 && (
-                        <div className="mt-6 flex justify-center gap-2">
-                            {heroSlides.map((slide, index) => (
-                                <button
-                                    key={slide._id || index}
-                                    type="button"
-                                    onClick={() => setActiveHeroIndex(index)}
-                                    className={`h-2 w-2 rounded-full border border-white/60 transition ${
-                                        index === activeHeroIndex ? "bg-white" : "bg-transparent"
-                                    }`}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    
                 </div>
 
                 {/* Scroll Indicator */}
-                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+                <div className="hidden sm:block absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
                     <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
                         <div className="w-1 h-2 bg-white rounded-full mt-2 animate-scroll"></div>
                     </div>
                 </div>
             </section>
 
-            <section className="px-4 mt-6">
-                <div className="container mx-auto">
-                    <div className="relative overflow-hidden rounded-full bg-white/5 border border-white/10">
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/5 to-transparent" />
-                        <div className="relative flex items-center gap-6 px-6 py-3 text-xs md:text-sm font-medium text-white/80 whitespace-nowrap  animate-marquee">
-                            {[
-                                'New drop: City Lights Collection',
-                                'Members get early access to limited pieces',
-                                'Earn points on every purchase with Urban Rewards',
-                                'Now shipping to 12+ global cities',
-                            ].map((text) => (
-                                <span key={text} className="flex items-center gap-2 ">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
-                                    {text}
-                                </span>
-                            ))}
-                            {[
-                                'New drop: City Lights Collection',
-                                'Members get early access to limited pieces',
-                                'Earn points on every purchase with Urban Rewards',
-                                'Now shipping to 12+ global cities',
-                            ].map((text) => (
-                                <span key={`${text}-duplicate`} className="flex items-center gap-2">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" />
-                                    {text}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
+            
 
             <section 
                 ref={featuresRef}
@@ -320,8 +285,8 @@ function Home() {
                         {categories.map((category, index) => (
                             <Link
                                 key={category.name}
-                                to={`/shop/${category.name.toLowerCase()}`}
-                                className={`group relative h-96 rounded-2xl overflow-hidden transform transition-all duration-700 hover:scale-105 hover:shadow-2xl ${
+                                to={getCategoryRoute(category.name)}
+                                className={`group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden transform transition-all duration-700 hover:scale-105 hover:shadow-2xl ${
                                     isVisible.features ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-100'
                                 }`}
                                 style={{ transitionDelay: `${index * 100}ms` }}
@@ -333,8 +298,8 @@ function Home() {
                                 />
                                 <div className={`absolute inset-0 bg-gradient-to-t ${category.color} to-transparent opacity-60 group-hover:opacity-70 transition-opacity`}></div>
                                 <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                    <h3 className="text-2xl font-bold mb-1">{category.name}</h3>
-                                    <p className="text-white/80">{category.count} Products</p>
+                                    <h3 className="text-xl sm:text-2xl font-bold mb-1">{category.name}</h3>
+                                    <p className="text-white/80 text-sm sm:text-base">{category.count} Products</p>
                                 </div>
                                 <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-3 transform translate-x-20 group-hover:translate-x-0 transition-transform duration-300">
                                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,7 +322,7 @@ function Home() {
                     <div className={`text-center mb-12 transition-all duration-1000 ${
                         isVisible.products ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                     }`}>
-                        <h2 className="text-4xl font-bold mb-4">Featured Products</h2>
+                        <h2 className="text-3xl sm:text-4xl font-bold mb-4">Featured Products</h2>
                         <p className={`${mutedText} max-w-2xl mx-auto`}>
                             Hand-picked styles that are trending right now
                         </p>
@@ -382,7 +347,7 @@ function Home() {
                                     }`}
                                     style={{ transitionDelay: `${index * 100}ms` }}
                                 >
-                                    <div className="relative h-80 overflow-hidden">
+                                    <div className="relative h-60 sm:h-72 md:h-80 overflow-hidden">
                                         <img 
                                             src={product.image} 
                                             alt={product.name}
@@ -513,15 +478,15 @@ function Home() {
                     />
                 </div>
                 <div className="container mx-auto relative z-10 text-center">
-                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 animate-pulse">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 animate-pulse">
                         Ready to Upgrade Your Style?
                     </h2>
-                    <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+                    <p className="text-base sm:text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
                         Join the Urban Wear community today and get 15% off your first order
                     </p>
                     <Link 
                         to="/shop" 
-                        className="inline-block px-8 py-4 bg-white text-emerald-900 font-semibold rounded-full hover:shadow-xl hover:shadow-white/30 transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white"
+                        className="inline-block w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-emerald-900 font-semibold rounded-full hover:shadow-xl hover:shadow-white/30 transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white"
                     >
                         Shop Now
                     </Link>

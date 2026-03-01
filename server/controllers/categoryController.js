@@ -1,4 +1,5 @@
 const CategoryModel = require("../models/CategoryModel");
+const ProductModel = require("../models/Product_Model");
 
 async function createCategory(req, res) {
     try {
@@ -78,11 +79,21 @@ async function updateCategory(req, res) {
 async function deleteCategory(req, res) {
     try {
         const id = req.params.id;
-        const category = await CategoryModel.findByIdAndDelete(id);
+        const category = await CategoryModel.findById(id);
 
         if (!category) {
             return res.status(404).json({ message: "Category not found" });
         }
+
+        const inUseCount = await ProductModel.countDocuments({ category: category.key });
+        if (inUseCount > 0) {
+            return res.status(409).json({
+                message: `Cannot delete: ${inUseCount} product(s) still use this category`,
+                inUseCount,
+            });
+        }
+
+        await CategoryModel.findByIdAndDelete(id);
 
         return res.status(200).json({
             success: true,

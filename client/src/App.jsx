@@ -7,7 +7,7 @@ import Shirt from "./pages/Shirt.jsx";
 import Oversized_Shirt from "./pages/Oversized_Shirt.jsx";
 import Trouser from "./pages/Trouser.jsx";
 import Sale from "./pages/Sale";
-import Account from "./pages/Account";
+import TrackOrder from "./pages/TrackOrder";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import ProductDetail from "./pages/ProductDetail";
@@ -22,7 +22,7 @@ function App() {
                 <Route path="/OverSized_TShirts" element={<Oversized_Shirt />} />
                 <Route path="/trousers" element={<Trouser />} />
                 <Route path="/sale" element={<Sale />} />
-                <Route path="/account" element={<Account />} />
+                <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/product/:id" element={<ProductDetail />} />

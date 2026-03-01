@@ -99,15 +99,32 @@ function ProductDetail() {
             <main className="pt-28 pb-20 px-4">
                 <div className="mx-auto max-w-6xl">
                     {/* Breadcrumbs */}
-                    <nav className="flex items-center gap-2 text-xs mb-8 text-neutral-500 uppercase tracking-widest">
-                        <Link to="/" className="hover:text-emerald-500 transition-colors">Home</Link>
-                        <span>/</span>
-                        <Link to="/shirt" className="hover:text-emerald-500 transition-colors">Shirts</Link>
-                        <span>/</span>
-                        <span className="text-neutral-300">{product.category}</span>
-                    </nav>
+                    {(() => {
+                        const key = (product.category || "").toLowerCase();
+                        let crumbPath = "/sale";
+                        let crumbLabel = "Sale";
+                        if (key.includes("hoodie")) {
+                            crumbPath = "/shirt";
+                            crumbLabel = "Shirts";
+                        } else if (key.includes("t-shirt") || key.includes("tshirts") || key.includes("shirt")) {
+                            crumbPath = "/OverSized_TShirts";
+                            crumbLabel = "Oversized T-Shirts";
+                        } else if (key.includes("trouser") || key.includes("pants")) {
+                            crumbPath = "/trousers";
+                            crumbLabel = "Trousers";
+                        }
+                        return (
+                            <nav className="flex items-center gap-2 text-xs mb-8 text-neutral-500 uppercase tracking-widest">
+                                <Link to="/" className="hover:text-emerald-500 transition-colors">Home</Link>
+                                <span>/</span>
+                                <Link to={crumbPath} className="hover:text-emerald-500 transition-colors">{crumbLabel}</Link>
+                                <span>/</span>
+                                <span className="text-neutral-300">{product.category}</span>
+                            </nav>
+                        );
+                    })()}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 lg:gap-12 mb-16 md:mb-20">
                         {/* Image Gallery */}
                         <div className="flex flex-col-reverse md:flex-row gap-4 h-fit">
                             {/* Thumbnails Sidebar */}
@@ -120,7 +137,7 @@ function ProductDetail() {
                                             className={`flex-shrink-0 w-16 md:w-full aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all duration-300 transform ${
                                                 activeImage === idx 
                                                     ? 'border-emerald-500 shadow-lg shadow-emerald-500/40 scale-105' 
-                                                    : 'border-white/5 opacity-40 hover:opacity-100 hover:border-white/20 hover:scale-105'
+                                                    : 'border-neutral-200 opacity-70 hover:opacity-100 hover:border-neutral-300 hover:scale-105'
                                             }`}
                                         >
                                             <img src={img.url} alt={`${product.name} thumbnail ${idx}`} className="w-full h-full object-cover" />
@@ -131,7 +148,7 @@ function ProductDetail() {
 
                             {/* Main Image */}
                             <div 
-                                className="flex-1 aspect-[4/5] overflow-hidden rounded-3xl bg-neutral-900 border border-white/5 shadow-2xl cursor-zoom-in relative group"
+                                className="flex-1 aspect-[4/5] overflow-hidden rounded-3xl bg-neutral-900 border border-neutral-200 shadow-2xl cursor-zoom-in relative group"
                                 onMouseMove={handleMouseMove}
                                 onMouseEnter={() => setShowZoom(true)}
                                 onMouseLeave={() => setShowZoom(false)}
@@ -238,8 +255,8 @@ function ProductDetail() {
                                             onClick={() => setSelectedSize(size)}
                                             className={`h-12 min-w-[3rem] px-4 flex items-center justify-center rounded-xl border font-bold text-xs transition-all duration-300 ${
                                                 selectedSize === size 
-                                                    ? 'bg-white border-white text-black shadow-lg shadow-white/10 scale-105' 
-                                                    : 'border-white/10 hover:border-emerald-500/50 hover:text-emerald-500'
+                                                    ? 'bg-white border-neutral-300 text-black shadow-lg shadow-neutral-200 scale-105' 
+                                                    : 'border-neutral-200 hover:border-emerald-500/50 hover:text-emerald-500'
                                             }`}
                                         >
                                             {size.toUpperCase()}
@@ -250,7 +267,7 @@ function ProductDetail() {
 
                             {/* Quantity & Add to Cart */}
                             <div className="flex flex-col sm:flex-row gap-4 mb-10">
-                                <div className={`flex items-center rounded-2xl border border-white/10 h-14 bg-white/5 ${product.stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                <div className={`flex items-center rounded-2xl border border-neutral-200 h-12 sm:h-14 bg-neutral-50 ${product.stock <= 0 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                     <button 
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                         disabled={product.stock <= 0}
@@ -291,7 +308,7 @@ function ProductDetail() {
                             </div>
 
                             {/* Trust Badges */}
-                            <div className={`grid grid-cols-2 gap-4 pt-8 border-t border-white/5 ${mutedText}`}>
+                            <div className={`grid grid-cols-2 gap-4 pt-8 border-t border-neutral-200 ${mutedText}`}>
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
@@ -310,14 +327,14 @@ function ProductDetail() {
 
                     {/* Related Products */}
                     {relatedProducts.length > 0 && (
-                        <section className="pt-20 border-t border-white/5">
+                        <section className="pt-16 md:pt-20 border-t border-neutral-200">
                             <h2 className="text-3xl font-bold mb-10">Complete the Look</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {relatedProducts.map((p) => (
                                     <Link 
                                         key={p._id} 
                                         to={`/product/${p._id}`}
-                                        className="group block bg-white/5 rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-500"
+                                        className="group block bg-neutral-50 rounded-2xl overflow-hidden hover:scale-[1.02] transition-all duration-500 border border-neutral-200"
                                     >
                                         <div className="aspect-[4/5] overflow-hidden">
                                             <img 

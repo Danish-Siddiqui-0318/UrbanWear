@@ -92,14 +92,14 @@ function Checkout() {
                         </div>
                         <h1 className="text-4xl font-bold mb-4">Order Confirmed!</h1>
                         <p className={`${mutedText} mb-2`}>
-                            Thank you for your order, <span className="text-white font-bold">{orderSuccess.customerName}</span>.
+                            Thank you for your order, <span className="text-neutral-900 font-bold">{orderSuccess.customerName}</span>.
                         </p>
                         <p className={`${mutedText} mb-8`}>
                             Order ID: <span className="text-emerald-500 font-mono">#{orderSuccess._id}</span>
                         </p>
                         <div className="space-y-4">
                             <Link 
-                                to="/shop" 
+                                to="/shirt" 
                                 className={`inline-block w-full px-10 py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-bold rounded-2xl hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300`}
                             >
                                 Continue Shopping
@@ -125,9 +125,9 @@ function Checkout() {
                 <div className="mx-auto max-w-6xl">
                     <h1 className="text-4xl font-bold mb-10">Checkout</h1>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                         {/* Shipping Form */}
-                        <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-white/5`}>
+                        <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-neutral-50`}>
                             <h2 className="text-xl font-bold mb-6 flex items-center gap-3">
                                 <span className="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-bold">1</span>
                                 Shipping Information
@@ -150,7 +150,7 @@ function Checkout() {
                                             value={formData.customerName}
                                             onChange={handleInputChange}
                                             placeholder="Enter your full name"
-                                            className={`w-full h-14 bg-white/5 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                            className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
                                     </div>
                                     <div>
@@ -162,7 +162,7 @@ function Checkout() {
                                             value={formData.customerEmail}
                                             onChange={handleInputChange}
                                             placeholder="Enter your email"
-                                            className={`w-full h-14 bg-white/5 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                            className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
                                     </div>
                                     <div>
@@ -174,7 +174,7 @@ function Checkout() {
                                             value={formData.phone}
                                             onChange={handleInputChange}
                                             placeholder="Enter your phone number"
-                                            className={`w-full h-14 bg-white/5 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                            className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
                                     </div>
                                     <div>
@@ -186,7 +186,7 @@ function Checkout() {
                                             onChange={handleInputChange}
                                             rows={3}
                                             placeholder="Enter your complete address"
-                                            className={`w-full bg-white/5 border ${primaryBorder} rounded-2xl p-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                            className={`w-full bg-neutral-50 border ${primaryBorder} rounded-2xl p-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
                                     </div>
                                 </div>
@@ -227,7 +227,7 @@ function Checkout() {
 
                         {/* Order Summary Sidebar */}
                         <div className="lg:col-span-1">
-                            <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-white/5 sticky top-32`}>
+                            <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-neutral-50 sticky top-32`}>
                                 <h2 className="text-xl font-bold mb-6">Review Items</h2>
                                 
                                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar mb-8">
@@ -239,13 +239,13 @@ function Checkout() {
                                             <div className="flex-1 min-w-0">
                                                 <h3 className="text-xs font-bold truncate">{item.name}</h3>
                                                 <p className={`${mutedText} text-[10px] font-bold`}>Qty: {item.quantity} • Size: {item.size}</p>
-                                                <p className="text-xs font-bold text-white mt-1">Rs.{item.price * item.quantity}</p>
+                                                <p className="text-xs font-bold text-neutral-900 mt-1">Rs.{item.price * item.quantity}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
-                                <div className="space-y-4 pt-6 border-t border-white/5 text-sm">
+                                <div className="space-y-4 pt-6 border-t border-neutral-200 text-sm">
                                     <div className="flex justify-between">
                                         <span className={mutedText}>Subtotal</span>
                                         <span className="font-bold">Rs.{subtotal}</span>
@@ -254,7 +254,7 @@ function Checkout() {
                                         <span className={mutedText}>Shipping</span>
                                         <span className="font-bold">{shipping === 0 ? "FREE" : `Rs.${shipping}`}</span>
                                     </div>
-                                    <div className="pt-4 border-t border-white/5 flex justify-between text-xl">
+                                    <div className="pt-4 border-t border-neutral-200 flex justify-between text-xl">
                                         <span className="font-bold">Total</span>
                                         <span className="font-bold text-emerald-500">Rs.{total}</span>
                                     </div>

@@ -275,6 +275,29 @@ async function updateOrderStatus(req, res) {
     }
 }
 
+async function getOrdersByCustomerEmail(req, res) {
+    try {
+        const email = req.params.email;
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+        const esc = email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const orders = await OrderModel.find({
+            customerEmail: { $regex: new RegExp(`^${esc}$`, "i") },
+        })
+            .sort({ createdAt: -1 })
+            .limit(100);
+        return res.status(200).json({
+            success: true,
+            orders,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || "Failed to load orders",
+        });
+    }
+}
+
 module.exports = {
     createOrder,
     getOrders,
@@ -282,4 +305,5 @@ module.exports = {
     updateOrderStatus,
     getOrderStats,
     getProductPerformance,
+    getOrdersByCustomerEmail,
 };

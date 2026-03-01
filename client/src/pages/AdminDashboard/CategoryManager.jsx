@@ -58,6 +58,25 @@ const CategoryManager = ({
         }
     };
 
+    const handleDeleteCategory = async (categoryId) => {
+        if (!token) {
+            setCategoriesError("You are not authorized. Please log in again.");
+            return;
+        }
+        const confirmed = window.confirm("Delete this category? This action cannot be undone.");
+        if (!confirmed) return;
+        try {
+            setCategoriesError("");
+            await axios.delete(
+                `${API_BASE_URL}/categories/${categoryId}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            await fetchCategories();
+        } catch (error) {
+            setCategoriesError(error.response?.data?.message || error.message || "Failed to delete category");
+        }
+    };
+
     return (
         <section className={`rounded-2xl border ${secondaryBorder} ${cardBackground} p-5`}>
             <h2 className="text-lg font-semibold mb-3">Categories</h2>
@@ -102,21 +121,31 @@ const CategoryManager = ({
                 <div className="space-y-2 max-h-40 overflow-y-auto pr-1 text-xs">
                     {categories.map((category) => (
                         <div key={category._id} className="flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-3 py-2">
-                            <div>
-                                <p className="font-medium text-neutral-900">{category.name}</p>
-                                <p className={`text-[11px] ${mutedText}`}>Key: {category.key}</p>
+                            <div className="min-w-0">
+                                <p className="font-medium text-neutral-900 truncate">{category.name}</p>
+                                <p className={`text-[11px] ${mutedText} truncate`}>Key: {category.key}</p>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => handleToggleCategoryActive(category._id, category.isActive)}
-                                className={`rounded-full border px-3 py-1 text-[11px] ${
-                                    category.isActive
-                                        ? "border-neutral-300 text-neutral-800 hover:border-neutral-500 hover:bg-neutral-100"
-                                        : "border-neutral-300 text-neutral-500 hover:border-neutral-500 hover:bg-neutral-100"
-                                }`}
-                            >
-                                {category.isActive ? "Active" : "Hidden"}
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => handleToggleCategoryActive(category._id, category.isActive)}
+                                    className={`rounded-full border px-3 py-1 text-[11px] ${
+                                        category.isActive
+                                            ? "border-neutral-300 text-neutral-800 hover:border-neutral-500 hover:bg-neutral-100"
+                                            : "border-neutral-300 text-neutral-500 hover:border-neutral-500 hover:bg-neutral-100"
+                                    }`}
+                                >
+                                    {category.isActive ? "Active" : "Hidden"}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleDeleteCategory(category._id)}
+                                    className="rounded-full border border-red-200 px-3 py-1 text-[11px] text-red-600 hover:border-red-400 hover:bg-red-50"
+                                    title="Delete category"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

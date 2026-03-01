@@ -23,58 +23,34 @@ function Footer({ variant = "public" }) {
         );
     }
 
-    const footerSections = [
-        {
-            title: "Shop",
-            links: [
-                { name: "Hoodies", path: "/shop/hoodies" },
-                { name: "T-Shirts", path: "/shop/t-shirts" },
-                { name: "Trousers", path: "/shop/trousers" },
-                { name: "Accessories", path: "/shop/accessories" },
-                { name: "New Arrivals", path: "/new-arrivals" },
-            ],
-        },
-        {
-            title: "Help",
-            links: [
-                { name: "Size Guide", path: "/size-guide" },
-                { name: "Shipping Info", path: "/shipping" },
-                { name: "Returns", path: "/returns" },
-                { name: "FAQs", path: "/faqs" },
-                { name: "Contact Us", path: "/contact" },
-            ],
-        },
-        {
-            title: "About",
-            links: [
-                { name: "Our Story", path: "/about" },
-                { name: "Sustainability", path: "/sustainability" },
-                { name: "Careers", path: "/careers" },
-                { name: "Press", path: "/press" },
-                { name: "Blog", path: "/blog" },
-            ],
-        },
+    const navLinks = [
+        { name: "Home", path: "/" },
+        { name: "Shirt", path: "/shirt" },
+        { name: "Oversized T-Shirts", path: "/OverSized_TShirts" },
+        { name: "Trouser", path: "/trousers" },
+        { name: "Sale", path: "/sale" },
+        { name: "Track Order", path: "/track-order" },
     ];
 
     return (
         <footer
             className={`${pageBackground} ${pageText} border-t border-gray-800`}
         >
-            <div className="container mx-auto px-4 md:px-6 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
-                    <div className="lg:col-span-2">
+            <div className="container mx-auto px-4 md:px-6 py-10 md:py-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10 md:mb-12">
+                    <div className="lg:col-span-1 text-center md:text-left">
                         <Link
                             to="/"
                             className="text-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent inline-block mb-4 hover:scale-105 transition-transform"
                         >
                             URBAN WEAR
                         </Link>
-                        <p className={`${mutedText} mb-4 max-w-md`}>
+                        <p className={`${mutedText} mb-4 max-w-md mx-auto md:mx-0`}>
                             Redefining urban fashion with sustainable, stylish, and
                             comfortable clothing for the modern trendsetter.
                         </p>
 
-                        <div className="flex space-x-4">
+                        <div className="flex space-x-4 justify-center md:justify-start">
                             {["facebook", "twitter", "instagram", "youtube"].map(
                                 (social) => (
                                     <a
@@ -82,7 +58,8 @@ function Footer({ variant = "public" }) {
                                         href={`https://${social}.com/urbanwear`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className={`w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-gradient-to-r ${primaryGradient} hover:scale-110 transition-all duration-300 group`}
+                                        aria-label={social}
+                                        className={`w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-gradient-to-r ${primaryGradient} hover:scale-110 transition-all duration-300 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(234,164,52)] focus-visible:ring-offset-2 focus-visible:ring-offset-white`}
                                     >
                                         <svg
                                             className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors"
@@ -108,52 +85,31 @@ function Footer({ variant = "public" }) {
                         </div>
                     </div>
 
-                    {footerSections.map((section) => (
-                        <div key={section.title}>
-                            <h3 className="font-semibold text-white mb-4">
-                                {section.title}
-                            </h3>
-                            <ul className="space-y-2">
-                                {section.links.map((link) => (
-                                    <li key={link.name}>
-                                        <Link
-                                            to={link.path}
-                                            className={`${mutedText} hover:text-emerald-500 transition-colors text-sm`}
-                                        >
-                                            {link.name}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
+                    <div className="lg:col-span-2">
+                        <h3 className="font-semibold text-neutral-900 mb-4 text-center md:text-left">Quick Links</h3>
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                            {navLinks.map((link) => (
+                                <li key={link.name}>
+                                    <Link
+                                        to={link.path}
+                                        className="group inline-flex items-center justify-between w-full rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-100 hover:border-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(234,164,52)] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                                    >
+                                        <span>{link.name}</span>
+                                        <svg className="ml-2 h-4 w-4 text-neutral-500 transition-transform group-hover:translate-x-1 group-hover:text-[rgb(234,164,52)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </div>
 
 
-                <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <div className="border-t border-gray-800 mt-6 md:mt-8 pt-6 md:pt-8 flex justify-center items-center">
                     <p className={`${mutedText} text-sm`}>
                         © {currentYear} Urban Wear. All rights reserved.
                     </p>
-                    <div className="flex space-x-6 mt-4 md:mt-0">
-                        <Link
-                            to="/privacy"
-                            className={`${mutedText} hover:text-emerald-500 text-sm transition-colors`}
-                        >
-                            Privacy Policy
-                        </Link>
-                        <Link
-                            to="/terms"
-                            className={`${mutedText} hover:text-emerald-500 text-sm transition-colors`}
-                        >
-                            Terms of Service
-                        </Link>
-                        <Link
-                            to="/cookies"
-                            className={`${mutedText} hover:text-emerald-500 text-sm transition-colors`}
-                        >
-                            Cookie Policy
-                        </Link>
-                    </div>
                 </div>
             </div>
         </footer>

@@ -9,6 +9,7 @@ router.post("/", orderController.createOrder);
 router.get("/", jwtMiddleware, orderController.getOrders);
 router.get("/stats/overview", jwtMiddleware, orderController.getOrderStats);
 router.get("/stats/products", jwtMiddleware, orderController.getProductPerformance);
+router.get("/customer/:email", orderController.getOrdersByCustomerEmail);
 router.get("/:id", jwtMiddleware, orderController.getOrderById);
 router.put("/:id", jwtMiddleware, orderController.updateOrderStatus);
 

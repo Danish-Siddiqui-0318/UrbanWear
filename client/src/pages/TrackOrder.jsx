@@ -11,7 +11,7 @@ import {
 } from "../theme/colors";
 import { API_BASE_URL } from "../config/api";
 
-function Account() {
+function TrackOrder() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchEmail, setSearchEmail] = useState("");
@@ -77,10 +77,10 @@ function Account() {
                 <div className="mx-auto max-w-4xl">
                     <section className="flex flex-col gap-4 mb-12">
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-500">
-                            Member Area
+                            Track Orders
                         </p>
                         <h1 className="text-4xl font-bold tracking-tight">
-                            Track Your Gear
+                            Track Your Order
                         </h1>
                         <p className={`max-w-xl text-sm ${mutedText}`}>
                             Enter your email address to view your order history and track active shipments.
@@ -88,14 +88,14 @@ function Account() {
                     </section>
 
                     {/* Email Search Form */}
-                    <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-white/5 mb-12`}>
+                    <div className={`p-8 rounded-3xl border ${secondaryBorder} bg-neutral-50 mb-12`}>
                         <form onSubmit={fetchOrdersByEmail} className="flex flex-col sm:flex-row gap-4">
                             <input 
                                 type="email" 
                                 value={searchEmail}
                                 onChange={(e) => setSearchEmail(e.target.value)}
                                 placeholder="Enter your order email"
-                                className="flex-1 h-14 bg-white/5 border border-white/10 rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors"
+                                className="flex-1 h-14 bg-neutral-50 border border-neutral-200 rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors"
                                 required
                             />
                             <button 
@@ -122,18 +122,18 @@ function Account() {
                             )}
 
                             {orders.length === 0 ? (
-                                <div className={`p-10 rounded-3xl border ${secondaryBorder} bg-white/5 text-center`}>
+                                <div className={`p-10 rounded-3xl border ${secondaryBorder} bg-neutral-50 text-center`}>
                                     <p className={mutedText}>No orders found for this email address.</p>
                                     <Link to="/shop" className="text-emerald-500 text-sm font-bold mt-4 inline-block hover:underline">Start Shopping</Link>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
                                     {orders.map((order) => (
-                                        <div key={order._id} className={`rounded-3xl border ${secondaryBorder} bg-white/5 overflow-hidden transition-all duration-500 hover:border-emerald-500/30`}>
-                                            <div className="p-6 border-b border-white/5 flex flex-wrap justify-between items-center gap-4">
+                                        <div key={order._id} className={`rounded-3xl border ${secondaryBorder} bg-neutral-50 overflow-hidden transition-all duration-500 hover:border-emerald-500/30`}>
+                                            <div className="p-6 border-b border-neutral-200 flex flex-wrap justify-between items-center gap-4">
                                                 <div>
                                                     <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Order ID</p>
-                                                    <p className="text-sm font-mono text-white">#{order._id}</p>
+                                                    <p className="text-sm font-mono text-neutral-900">#{order._id}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Status</p>
@@ -143,11 +143,11 @@ function Account() {
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-1">Total</p>
-                                                    <p className="text-sm font-bold text-white">Rs.{order.total}</p>
+                                                    <p className="text-sm font-bold text-neutral-900">Rs.{order.total}</p>
                                                 </div>
                                             </div>
                                             
-                                            <div className="p-6 bg-white/[0.02]">
+                                            <div className="p-6 bg-neutral-50">
                                                 <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
                                                     {order.items.map((item, idx) => (
                                                         <div key={idx} className="flex-shrink-0 w-20 flex flex-col gap-2">
@@ -162,7 +162,7 @@ function Account() {
                                                 </div>
                                             </div>
 
-                                            <div className="px-6 py-4 bg-white/5 flex justify-between items-center">
+                                            <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-200 flex justify-between items-center">
                                                 <p className="text-[10px] text-neutral-500 font-medium">
                                                     Placed on {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </p>
@@ -190,4 +190,4 @@ function Account() {
     );
 }
 
-export default Account;
+export default TrackOrder;

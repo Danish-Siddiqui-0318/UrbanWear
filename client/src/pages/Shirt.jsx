@@ -22,7 +22,7 @@ function Shirt() {
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("newest");
     const [selectedSizes, setSelectedSizes] = useState([]);
-    const [priceRange, setPriceRange] = useState({min: 0, max: 10000});
+    const [priceRange, setPriceRange] = useState({min: 0, max: 1000000});
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
@@ -51,11 +51,19 @@ function Shirt() {
         fetchData();
     }, []);
 
-    // Filter products to show only shirts
-    const shirtProducts = products.filter(p =>
-        p.category?.toLowerCase() === "shirt" ||
-        p.category?.toLowerCase() === "shirts"
-    );
+    // Filter products to show only non-oversized shirts (flexible keys)
+    const shirtProducts = products.filter(p => {
+        const key = (p.category || "").toLowerCase();
+        const isShirtLike =
+            key === "shirt" ||
+            key === "shirts" ||
+            key === "tshirt" ||
+            key === "tshirts" ||
+            key === "t-shirt" ||
+            key === "t-shirts" ||
+            (key.includes("shirt") && !key.includes("oversized"));
+        return isShirtLike;
+    });
 
     // Apply all filters
     const filteredProducts = shirtProducts
@@ -349,7 +357,7 @@ function Shirt() {
                                 <button
                                     onClick={() => {
                                         setSelectedSizes([]);
-                                        setPriceRange({min: 0, max: 10000});
+                                        setPriceRange({min: 0, max: 1000000});
                                         setSearchQuery("");
                                     }}
                                     className="w-full px-4 py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors text-sm font-medium"
@@ -403,7 +411,7 @@ function Shirt() {
                                     <button
                                         onClick={() => {
                                             setSelectedSizes([]);
-                                            setPriceRange({min: 0, max: 10000});
+                                            setPriceRange({min: 0, max: 1000000});
                                             setSearchQuery("");
                                         }}
                                         className="px-6 py-3 bg-white/5 text-white rounded-xl font-medium hover:bg-white/10 transition-all duration-300"

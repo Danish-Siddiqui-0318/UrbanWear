@@ -1,6 +1,6 @@
 // components/Navbar.jsx
 import { useState, useEffect } from "react";
-import { Link, useNavigate, NavLink } from "react-router-dom";
+import { Link, useNavigate, NavLink, useLocation } from "react-router-dom";
 import {
     pageBackground,
     pageText,
@@ -16,11 +16,13 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [navSearchQuery, setNavSearchQuery] = useState("");
     const navigate = useNavigate();
+    const location = useLocation();
+    const navTextClass = scrolled ? pageText : "text-white";
 
     const handleNavSearch = (e) => {
         e.preventDefault();
         if (navSearchQuery.trim()) {
-            navigate(`/shop?q=${encodeURIComponent(navSearchQuery.trim())}`);
+            navigate(`/shirt?q=${encodeURIComponent(navSearchQuery.trim())}`);
             setIsSearchOpen(false);
             setNavSearchQuery("");
         }
@@ -56,12 +58,22 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
         };
     }, []);
 
+    // Ensure solid navbar on non-home routes for contrast
+    useEffect(() => {
+        if (location.pathname !== "/") {
+            setScrolled(true);
+        } else {
+            setScrolled(window.scrollY > 20);
+        }
+    }, [location.pathname]);
+
     const navLinks = [
         { name: "Home", path: "/" },
         { name: "Shirt", path: "/shirt" },
-        { name: "OverSized TShirts", path: "/OverSized_TShirts" },
+        { name: "Oversized T-Shirts", path: "/OverSized_TShirts" },
         { name: "Trouser", path: "/trousers" },
         { name: "Sale", path: "/sale" },
+        { name: "Track Order", path: "/track-order" },
     ];
 
     if (variant === "admin") {
@@ -112,7 +124,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
             className={`fixed w-full z-50 transition-all duration-500 ${
                 scrolled
                     ? `${pageBackground} backdrop-blur-lg bg-opacity-90 shadow-lg py-3`
-                    : "bg-transparent py-5"
+                    : "bg-transparent bg-gradient-to-b from-black/20 to-transparent py-5"
             }`}
         >
             <div className="container mx-auto px-4 md:px-6">
@@ -124,13 +136,13 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                         URBAN WEAR
                     </Link>
 
-                    <div className="hidden lg:flex items-center space-x-8">
+                    <div className="hidden md:flex items-center space-x-8">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.name}
                                 to={link.path}
                                 className={({ isActive }) => `
-                                    ${pageText} transition-all duration-300 relative group
+                                    ${navTextClass} ${!scrolled ? 'drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]' : ''} transition-all duration-300 relative group
                                     ${isActive ? 'text-emerald-500' : 'hover:text-emerald-500'}
                                 `}
                             >
@@ -147,10 +159,10 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                         ))}
                     </div>
 
-                    <div className="hidden lg:flex items-center space-x-6">
+                    <div className="hidden md:flex items-center space-x-6">
                         <button
                             onClick={() => setIsSearchOpen(true)}
-                            className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
+                            className={`${navTextClass} ${!scrolled ? 'drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]' : ''} hover:text-emerald-500 transition-all duration-300 relative group`}
                         >
                             <svg
                                 className="w-5 h-5"
@@ -168,29 +180,9 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                             <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
                         </button>
 
-                        <Link
-                            to="/account"
-                            className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
-                        >
-                            <svg
-                                className="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                />
-                            </svg>
-                            <span className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-emerald-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                        </Link>
-
                         <button
                             onClick={() => navigate("/cart")}
-                            className={`${pageText} hover:text-emerald-500 transition-all duration-300 relative group`}
+                            className={`${navTextClass} ${!scrolled ? 'drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]' : ''} hover:text-emerald-500 transition-all duration-300 relative group`}
                         >
                             <svg
                                 className="w-5 h-5"
@@ -215,7 +207,10 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
 
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="lg:hidden text-white focus:outline-none"
+                        className="md:hidden text-white focus:outline-none"
+                        aria-label="Toggle navigation menu"
+                        aria-expanded={isOpen}
+                        aria-controls="mobile-menu"
                     >
                         <svg
                             className="w-6 h-6"
@@ -243,7 +238,8 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                 </div>
 
                 <div
-                    className={`lg:hidden transition-all duration-500 overflow-hidden ${
+                    id="mobile-menu"
+                    className={`md:hidden transition-all duration-500 overflow-hidden ${
                         isOpen ? "max-h-96 opacity-100 mt-4" : "max-h-0 opacity-0"
                     }`}
                 >
@@ -253,7 +249,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                                 key={link.name}
                                 to={link.path}
                                 className={({ isActive }) => `
-                                    ${pageText} transition-colors py-2 block
+                                    ${navTextClass} transition-colors py-2 block
                                     ${isActive ? 'text-emerald-500 font-bold border-l-2 border-emerald-500 pl-4' : 'hover:text-emerald-500'}
                                 `}
                                 onClick={() => setIsOpen(false)}
@@ -262,7 +258,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                             </NavLink>
                         ))}
                         <div className="flex space-x-4 pt-4 border-t border-gray-700">
-                            <button className={`${pageText} hover:text-emerald-500`}>
+                            <button className={`${navTextClass} hover:text-emerald-500`}>
                                 <svg
                                     className="w-5 h-5"
                                     fill="none"
@@ -277,27 +273,9 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                                     />
                                 </svg>
                             </button>
-                            <Link
-                                to="/account"
-                                className={`${pageText} hover:text-emerald-500`}
-                            >
-                                <svg
-                                    className="w-5 h-5"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                                    />
-                                </svg>
-                            </Link>
                             <button
                                 onClick={() => navigate("/cart")}
-                                className={`${pageText} hover:text-emerald-500 relative`}
+                                className={`${navTextClass} hover:text-emerald-500 relative`}
                             >
                                 <svg
                                     className="w-5 h-5"
@@ -348,7 +326,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                         </button>
                     </form>
-                    <p className="mt-8 text-white/30 text-center text-sm">Hit Enter to see results in Shop</p>
+                    <p className="mt-8 text-white/30 text-center text-sm">Hit Enter to see results in Shirts</p>
                 </div>
             </div>
         </div>

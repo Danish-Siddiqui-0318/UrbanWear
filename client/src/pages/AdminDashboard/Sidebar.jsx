@@ -4,7 +4,7 @@ import {
     mutedText
 } from "../../theme/colors";
 
-const Sidebar = ({ activeTab, setActiveTab, name, onLogout }) => {
+const Sidebar = ({ activeTab, setActiveTab, name, onLogout, isOpen = false, onClose = () => {} }) => {
     const menuItems = [
         { id: "overview", label: "Dashboard", icon: (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,9 @@ const Sidebar = ({ activeTab, setActiveTab, name, onLogout }) => {
     ];
 
     return (
-        <aside className={`w-full lg:w-64 border-r ${secondaryBorder} flex flex-col min-h-screen bg-white shadow-sm`}>
+        <>
+        {/* Desktop sidebar */}
+        <aside className={`hidden lg:flex w-64 border-r ${secondaryBorder} flex-col min-h-screen bg-white shadow-sm`}>
             <div className="p-6 border-b border-neutral-100">
                 <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-sm font-bold text-white shadow-lg shadow-emerald-500/20">
@@ -87,6 +89,54 @@ const Sidebar = ({ activeTab, setActiveTab, name, onLogout }) => {
                 </div>
             </div>
         </aside>
+
+        {/* Mobile overlay sidebar */}
+        {isOpen && (
+            <div className="lg:hidden fixed inset-0 z-50">
+                <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+                <aside className={`relative h-full w-72 max-w-[85%] bg-white border-r ${secondaryBorder} shadow-2xl`}>
+                    <div className="p-4 border-b border-neutral-100 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-xs font-bold text-white">
+                                UW
+                            </div>
+                            <p className="text-sm font-bold tracking-tight text-neutral-900">Admin</p>
+                        </div>
+                        <button onClick={onClose} aria-label="Close sidebar" className="p-2 text-neutral-500 hover:text-neutral-800">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    <nav className="p-3 space-y-1 overflow-y-auto">
+                        {menuItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => { setActiveTab(item.id); onClose(); }}
+                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
+                                    activeTab === item.id 
+                                        ? "bg-emerald-50 text-emerald-700 shadow-sm" 
+                                        : "text-neutral-500 hover:bg-neutral-50 hover:text-neutral-900"
+                                }`}
+                            >
+                                {item.icon}
+                                {item.label}
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="p-3 border-t border-neutral-100">
+                        <button
+                            onClick={() => { onLogout(); onClose(); }}
+                            className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white border border-neutral-200 rounded-xl text-[11px] font-bold text-red-600 hover:bg-red-50 hover:border-red-100 transition-all duration-300"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </aside>
+            </div>
+        )}
+        </>
     );
 };
 
