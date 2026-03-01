@@ -32,6 +32,8 @@ async function upsertAnnouncement(req, res) {
             await announcement.save();
         }
 
+        req.io.emit("announcements-updated");
+
         return res.status(200).json({
             success: true,
             announcement,

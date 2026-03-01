@@ -41,6 +41,8 @@ async function createOrder(req, res) {
             notes: notes || "",
         });
 
+        req.io.emit("orders-updated");
+
         return res.status(201).json({
             success: true,
             order,
@@ -357,6 +359,8 @@ async function updateOrderStatus(req, res) {
 
         // Fetch the updated order to return it (using lean to avoid any validation)
         const updatedOrder = await OrderModel.findById(id).lean();
+
+        req.io.emit("orders-updated");
 
         return res.status(200).json({
             success: true,

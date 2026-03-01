@@ -7,6 +7,7 @@ import Footer from '../components/Footer';
 import {pageBackground, pageText, primaryGradient, mutedText} from '../theme/colors';
 import {API_BASE_URL} from '../config/api';
 import mainPage from '../assets/mainPage.png'
+import { socket } from "../socket";
 
 // Import category images - FIXED PATHS
 import shirtsImg from "../assets/shirts.png";
@@ -242,6 +243,29 @@ function Home() {
 
         loadFeatured();
         loadHeroSlides();
+
+        socket.on("hero-slides-updated", () => {
+            loadHeroSlides();
+        });
+
+        socket.on("products-updated", () => {
+            loadFeatured();
+        });
+
+        socket.on("announcements-updated", () => {
+            getAnnouncement();
+        });
+
+        socket.on("categories-updated", () => {
+            fetchCategories();
+        });
+
+        return () => {
+            socket.off("hero-slides-updated");
+            socket.off("products-updated");
+            socket.off("announcements-updated");
+            socket.off("categories-updated");
+        };
     }, [location.pathname]);
 
     useEffect(() => {
