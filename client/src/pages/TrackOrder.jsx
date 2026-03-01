@@ -150,28 +150,29 @@ function TrackOrder() {
                                             <div className="p-6 bg-neutral-50">
                                                 <div className="flex flex-col gap-4">
                                                     {order.items.map((item, idx) => (
-                                                        <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl border border-neutral-100 bg-white shadow-sm">
-                                                            <div className="w-16 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-neutral-100">
-                                                                <img 
-                                                                    src={item.image || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop"} 
-                                                                    alt={item.name} 
-                                                                    className="w-full h-full object-cover" 
-                                                                />
-                                                            </div>
+                                                        <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-neutral-100 bg-white shadow-sm">
                                                             <div className="flex-1 min-w-0">
-                                                                <p className="text-xs font-bold text-neutral-900 truncate mb-1">{item.name}</p>
-                                                                <div className="flex items-center gap-3">
-                                                                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
-                                                                        Qty: {item.quantity}
-                                                                    </p>
+                                                                <h4 className="text-sm font-bold text-neutral-900 mb-1">{item.name}</h4>
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Qty:</span>
+                                                                        <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{item.quantity}</span>
+                                                                    </div>
                                                                     <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
-                                                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                                                                        Size: {item.size || 'N/A'}
-                                                                    </p>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Size:</span>
+                                                                        <span className="text-[10px] font-bold text-neutral-900 uppercase tracking-widest">{item.size || 'N/A'}</span>
+                                                                    </div>
+                                                                    <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Price:</span>
+                                                                        <span className="text-[10px] font-bold text-neutral-900 uppercase tracking-widest">Rs.{item.price}</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                            <div className="text-right">
-                                                                <p className="text-xs font-bold text-neutral-900">Rs.{item.price * item.quantity}</p>
+                                                            <div className="text-right pl-4 border-l border-neutral-100">
+                                                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-0.5">Subtotal</p>
+                                                                <p className="text-sm font-bold text-emerald-500">Rs.{item.price * item.quantity}</p>
                                                             </div>
                                                         </div>
                                                     ))}
