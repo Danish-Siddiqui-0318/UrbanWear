@@ -400,7 +400,7 @@ function Trouser() {
                                             </div>
                                         </div>
 
-                                        <h3 className="text-base font-semibold text-white group-hover:text-emerald-400 transition-colors duration-300 line-clamp-1">
+                                        <h3 className="text-base font-semibold text-black group-hover:text-emerald-400 transition-colors duration-300 line-clamp-1">
                                             {product.name}
                                         </h3>
 

@@ -1,35 +1,158 @@
 // pages/Home.jsx
-import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import {useState, useEffect, useRef} from 'react';
+import {Link, useLocation} from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { pageBackground, pageText, primaryGradient, mutedText } from '../theme/colors';
-import { API_BASE_URL } from '../config/api';
+import {pageBackground, pageText, primaryGradient, mutedText} from '../theme/colors';
+import {API_BASE_URL} from '../config/api';
+import mainPage from '../assets/mainPage.png'
+
+// Import category images - FIXED PATHS
+import shirtsImg from "../assets/shirts.png";
+import trousersImg from "../assets/trousers.png";
+import oversizedImg from "../assets/overSized.png"; // Fixed: using correct path
 
 function Home() {
     const location = useLocation();
     const [isVisible, setIsVisible] = useState({});
-    const [counts, setCounts] = useState({ customers: 0, products: 0, years: 0, stores: 0 });
+    const [counts, setCounts] = useState({customers: 0, products: 0, years: 0, stores: 0});
     const [featuredProducts, setFeaturedProducts] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
     const [announcement, setAnnouncement] = useState(null);
     const [heroSlides, setHeroSlides] = useState([]);
     const [activeHeroIndex, setActiveHeroIndex] = useState(0);
-    
+    const [categories, setCategories] = useState([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
+
     const heroRef = useRef(null);
     const featuresRef = useRef(null);
     const productsRef = useRef(null);
     const statsRef = useRef(null);
 
+    // Fetch announcement data
+    const getAnnouncement = async () => {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/announcement/`);
+            if (response.data.success && response.data.announcement) {
+                setAnnouncement(response.data.announcement);
+            }
+        } catch (error) {
+            console.error("Failed to fetch announcement", error);
+        }
+    };
+
+    // Fetch all products and calculate category counts
+    const fetchCategories = async () => {
+        try {
+            setLoadingCategories(true);
+            const response = await axios.get(`${API_BASE_URL}/products/products`, {
+                params: {page: 1, limit: 1000}
+            });
+
+            const products = response.data.products || [];
+            console.log("Fetched products:", products); // Debug log
+
+            // Calculate counts for each category
+            const shirtCount = products.filter(p =>
+                p.category?.toLowerCase() === "shirt" ||
+                p.category?.toLowerCase() === "shirts"
+            ).length;
+
+            const oversizedCount = products.filter(p =>
+                p.category?.toLowerCase() === "oversized" ||
+                p.category?.toLowerCase() === "oversized-shirt" ||
+                p.category?.toLowerCase() === "oversized shirts" ||
+                p.category?.toLowerCase() === "oversized_shirt"
+            ).length;
+
+            const trouserCount = products.filter(p =>
+                p.category?.toLowerCase() === "trouser" ||
+                p.category?.toLowerCase() === "trousers" ||
+                p.category?.toLowerCase() === "pants" ||
+                p.category?.toLowerCase() === "jeans"
+            ).length;
+
+            console.log("Category counts:", {shirtCount, oversizedCount, trouserCount}); // Debug log
+
+            // Using local images from assets folder
+            const categoryData = [
+                {
+                    name: 'T-Shirts',
+                    route: '/shirt',
+                    image: shirtsImg, // Using local image
+                    count: shirtCount,
+                    color: 'from-teal-500',
+                    displayName: 'T-Shirts'
+                },
+                {
+                    name: 'Oversized',
+                    route: '/OverSized_TShirts',
+                    image: oversizedImg, // Using local image
+                    count: oversizedCount,
+                    color: 'from-emerald-500',
+                    displayName: 'Oversized Shirts'
+                },
+                {
+                    name: 'Trousers',
+                    route: '/trousers',
+                    image: trousersImg, // Using local image
+                    count: trouserCount,
+                    color: 'from-emerald-500',
+                    displayName: 'Trousers'
+                }
+            ];
+
+            console.log("Category data:", categoryData); // Debug log
+            setCategories(categoryData);
+        } catch (error) {
+            console.error("Failed to fetch categories", error);
+            // Fallback categories if API fails - using local images
+            const fallbackCategories = [
+                {
+                    name: 'T-Shirts',
+                    route: '/shirt',
+                    image: shirtsImg,
+                    count: 0,
+                    color: 'from-teal-500',
+                    displayName: 'T-Shirts'
+                },
+                {
+                    name: 'Oversized',
+                    route: '/OverSized_TShirts',
+                    image: oversizedImg,
+                    count: 0,
+                    color: 'from-emerald-500',
+                    displayName: 'Oversized Shirts'
+                },
+                {
+                    name: 'Trousers',
+                    route: '/trousers',
+                    image: trousersImg,
+                    count: 0,
+                    color: 'from-emerald-500',
+                    displayName: 'Trousers'
+                }
+            ];
+            setCategories(fallbackCategories);
+        } finally {
+            setLoadingCategories(false);
+        }
+    };
+
+    useEffect(() => {
+        getAnnouncement();
+        fetchCategories();
+    }, []);
+
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    setIsVisible(prev => ({ ...prev, [entry.target.id]: entry.isIntersecting }));
+                    setIsVisible(prev => ({...prev, [entry.target.id]: entry.isIntersecting}));
                 });
             },
-            { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+            {threshold: 0.1, rootMargin: '0px 0px -50px 0px'}
         );
 
         const refs = [heroRef, featuresRef, productsRef, statsRef];
@@ -42,16 +165,16 @@ function Home() {
 
     useEffect(() => {
         if (isVisible.stats) {
-            const targets = { customers: 50000, products: 1000, years: 5, stores: 12 };
+            const targets = {customers: 50000, products: 1000, years: 5, stores: 12};
             const duration = 2000;
             const steps = 60;
             const increment = {};
-            
+
             Object.keys(targets).forEach(key => {
                 increment[key] = targets[key] / (duration / (1000 / steps));
             });
 
-            let current = { customers: 0, products: 0, years: 0, stores: 0 };
+            let current = {customers: 0, products: 0, years: 0, stores: 0};
             const timer = setInterval(() => {
                 let completed = true;
                 Object.keys(targets).forEach(key => {
@@ -60,8 +183,8 @@ function Home() {
                         completed = false;
                     }
                 });
-                
-                setCounts({ ...current });
+
+                setCounts({...current});
 
                 if (completed) clearInterval(timer);
             }, 1000 / steps);
@@ -75,13 +198,13 @@ function Home() {
             try {
                 setLoadingFeatured(true);
                 const response = await axios.get(`${API_BASE_URL}/products/products`, {
-                    params: { isFeatured: true, limit: 4, _t: Date.now() },
+                    params: {isFeatured: true, limit: 4, _t: Date.now()},
                 });
                 const allProducts = response.data.products || [];
-                
+
                 // CRITICAL SAFETY FILTER: Only keep products where isFeatured is truly true
                 const filteredProducts = allProducts.filter(p => p.isFeatured === true);
-                
+
                 setFeaturedProducts(
                     filteredProducts.map((product) => ({
                         id: product._id,
@@ -104,15 +227,6 @@ function Home() {
             }
         }
 
-        async function loadAnnouncement() {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/announcement`);
-                setAnnouncement(response.data.announcement || null);
-            } catch {
-                setAnnouncement(null);
-            }
-        }
-
         async function loadHeroSlides() {
             try {
                 const response = await axios.get(`${API_BASE_URL}/hero-slides`);
@@ -124,7 +238,6 @@ function Home() {
         }
 
         loadFeatured();
-        loadAnnouncement();
         loadHeroSlides();
     }, [location.pathname]);
 
@@ -140,75 +253,39 @@ function Home() {
         return () => clearInterval(interval);
     }, [heroSlides]);
 
-    const categories = [
-        { name: 'Hoodies', image: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2070&auto=format&fit=crop', count: 45, color: 'from-emerald-500' },
-        { name: 'T-Shirts', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=2080&auto=format&fit=crop', count: 89, color: 'from-teal-500' },
-        { name: 'Trousers', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?q=80&w=1974&auto=format&fit=crop', count: 34, color: 'from-emerald-500' },
-        { name: 'Accessories', image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2070&auto=format&fit=crop', count: 56, color: 'from-teal-500' },
-    ];
-
-    const testimonials = [
-        {
-            name: 'Sarah Johnson',
-            role: 'Verified Buyer',
-            content: 'The quality of Urban Wear hoodies is unmatched. I get compliments every time I wear them!',
-            rating: 5,
-            image: 'https://images.unsplash.com/photo-1494790108777-466d853c8845?q=80&w=1974&auto=format&fit=crop'
-        },
-        {
-            name: 'Mike Chen',
-            role: 'Streetwear Enthusiast',
-            content: 'Finally found a brand that combines comfort with style perfectly. My go-to for daily wear.',
-            rating: 5,
-            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop'
-        },
-        {
-            name: 'Emma Rodriguez',
-            role: 'Fashion Blogger',
-            content: 'The attention to detail and sustainable practices make Urban Wear stand out. Love their new collection!',
-            rating: 5,
-            image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop'
-        }
-    ];
-
     const activeSlide = heroSlides && heroSlides.length > 0 ? heroSlides[activeHeroIndex] : null;
-
-    const getCategoryRoute = (name) => {
-        const key = (name || "").toLowerCase();
-        if (key.includes("hoodie")) return "/shirt";
-        if (key.includes("t-shirt") || key.includes("tshirts") || key.includes("shirt")) return "/OverSized_TShirts";
-        if (key.includes("trouser") || key.includes("pants")) return "/trousers";
-        return "/sale";
-    };
 
     return (
         <div className={`min-h-screen ${pageBackground} ${pageText}`}>
-            <Navbar />
-            
+            <Navbar/>
+
+            {/* Announcement Banner */}
             {/*{announcement && announcement.isActive && announcement.message && (*/}
-            {/*    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs sm:text-sm py-2 px-4 text-center">*/}
+            {/*    <div*/}
+            {/*        className="bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs sm:text-sm py-2 px-4 text-center font-medium">*/}
             {/*        {announcement.message}*/}
             {/*    </div>*/}
             {/*)}*/}
 
-            <section 
+            <section
                 ref={heroRef}
                 id="hero"
                 className="relative min-h-[70vh] md:h-screen flex items-center justify-center overflow-hidden"
             >
                 <div className="absolute inset-0">
-                    <img 
+                    <img
                         src={
                             activeSlide && activeSlide.imageUrl
                                 ? activeSlide.imageUrl
-                                : "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop"
+                                : mainPage
                         }
                         alt={activeSlide && activeSlide.title ? activeSlide.title : "Urban fashion"}
                         className="w-full h-full object-cover animate-ken-burns"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/80 via-teal-900/60 to-transparent"></div>
+                    <div
+                        className="absolute inset-0 bg-gradient-to-br from-emerald-900/80 via-teal-900/60 to-transparent"></div>
                 </div>
-                
+
                 <div className={`relative z-10 text-center px-4 transform transition-all duration-1000 ${
                     isVisible.hero ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
                 }`}>
@@ -217,43 +294,49 @@ function Home() {
                             activeSlide.title
                         ) : (
                             <>
-                                Define Your
-                                <span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent block mt-2">
-                                    Urban Style
+                                Welcome to{" "}
+                                <span
+                                    className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent block mt-2">
+                                    Urban Wear
                                 </span>
                             </>
                         )}
                     </h1>
+
+                    {/* Hero Subtitle - Shows announcement message or default text */}
                     <p className={`text-base sm:text-lg md:text-2xl mb-8 max-w-2xl mx-auto ${pageText} animate-slide-up text-cyan-50`}>
-                        {activeSlide && activeSlide.subtitle
-                            ? activeSlide.subtitle
-                            : "Discover the latest in streetwear fashion. Sustainable, comfortable, and always on trend."}
+                        {announcement && announcement.isActive && announcement.message ? (
+                            announcement.message
+                        ) : activeSlide && activeSlide.subtitle ? (
+                            activeSlide.subtitle
+                        ) : (
+                            "Discover the latest in streetwear fashion. Sustainable, comfortable, and always on trend."
+                        )}
                     </p>
+
                     <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
                         {(activeSlide && activeSlide.buttonLabel && activeSlide.buttonLink) ? (
-                            <Link 
+                            <Link
                                 to={activeSlide.buttonLink}
                                 className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
                             >
                                 {activeSlide.buttonLabel}
                             </Link>
                         ) : (
-                            <Link 
-                                to="/shirt" 
+                            <Link
+                                to="/shirt"
                                 className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
                             >
                                 Shop Now
                             </Link>
                         )}
-                        <Link 
-                            to="/collections" 
+                        <Link
+                            to="/collections"
                             className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-white/30 text-white font-semibold rounded-full hover:bg-white/10 transition-all duration-300 hover:scale-105 backdrop-blur-sm"
                         >
                             View Collections
                         </Link>
                     </div>
-
-                    
                 </div>
 
                 {/* Scroll Indicator */}
@@ -264,12 +347,11 @@ function Home() {
                 </div>
             </section>
 
-            
-
-            <section 
+            {/* Categories Section - Dynamic from API */}
+            <section
                 ref={featuresRef}
                 id="categories"
-                className="py-20 px-4 "
+                className="py-20 px-4"
             >
                 <div className="container mx-auto">
                     <div className={`text-center mb-12 transition-all duration-1000 ${
@@ -281,39 +363,60 @@ function Home() {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {categories.map((category, index) => (
-                            <Link
-                                key={category.name}
-                                to={getCategoryRoute(category.name)}
-                                className={`group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden transform transition-all duration-700 hover:scale-105 hover:shadow-2xl ${
-                                    isVisible.features ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-100'
-                                }`}
-                                style={{ transitionDelay: `${index * 100}ms` }}
-                            >
-                                <img 
-                                    src={category.image} 
-                                    alt={category.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                                />
-                                <div className={`absolute inset-0 bg-gradient-to-t ${category.color} to-transparent opacity-60 group-hover:opacity-70 transition-opacity`}></div>
-                                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                                    <h3 className="text-xl sm:text-2xl font-bold mb-1">{category.name}</h3>
-                                    <p className="text-white/80 text-sm sm:text-base">{category.count} Products</p>
+                    {loadingCategories ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {[1, 2, 3].map(i => (
+                                <div key={i}
+                                     className="relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden">
+                                    <div className="w-full h-full bg-white/5 animate-pulse"></div>
                                 </div>
-                                <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-3 transform translate-x-20 group-hover:translate-x-0 transition-transform duration-300">
-                                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                    </svg>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {categories.map((category, index) => (
+                                <Link
+                                    key={category.name}
+                                    to={category.route}
+                                    className={`group relative h-64 sm:h-72 md:h-80 lg:h-96 rounded-2xl overflow-hidden transform transition-all duration-700 hover:scale-105 hover:shadow-2xl ${
+                                        isVisible.features ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-100'
+                                    }`}
+                                    style={{transitionDelay: `${index * 100}ms`}}
+                                >
+                                    <img
+                                        src={category.image}
+                                        alt={category.name}
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                        onError={(e) => {
+                                            console.log(`Image failed to load for ${category.name}`);
+                                            e.target.src = "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop"; // Fallback image
+                                        }}
+                                    />
+                                    <div
+                                        className={`absolute inset-0 bg-gradient-to-t ${category.color} to-transparent opacity-60 group-hover:opacity-70 transition-opacity`}></div>
+                                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                        <h3 className="text-xl sm:text-2xl font-bold mb-1">{category.displayName}</h3>
+                                        <p className="text-white/80 text-sm sm:text-base">
+                                            {category.count} {category.count === 1 ? 'Product' : 'Products'}
+                                        </p>
+                                    </div>
+                                    <div
+                                        className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-3 transform translate-x-20 group-hover:translate-x-0 transition-transform duration-300">
+                                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                  d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                        </svg>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
             {/* Featured Products */}
-            <section 
+            <section
                 ref={productsRef}
                 id="products"
                 className="py-20 px-4 bg-white/5"
@@ -331,7 +434,7 @@ function Home() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {loadingFeatured ? (
                             [1, 2, 3, 4].map(i => (
-                                <div key={i} className="aspect-[4/5] rounded-xl bg-white/5 animate-pulse" />
+                                <div key={i} className="aspect-4/5 rounded-xl bg-white/5 animate-pulse"/>
                             ))
                         ) : featuredProducts.length === 0 ? (
                             <div className="col-span-full text-center py-10">
@@ -345,38 +448,38 @@ function Home() {
                                     className={`group bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-500 hover:scale-105 ${
                                         isVisible.products ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
                                     }`}
-                                    style={{ transitionDelay: `${index * 100}ms` }}
+                                    style={{transitionDelay: `${index * 100}ms`}}
                                 >
                                     <div className="relative h-60 sm:h-72 md:h-80 overflow-hidden">
-                                        <img 
-                                            src={product.image} 
+                                        <img
+                                            src={product.image}
                                             alt={product.name}
-                                            className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${product.stock <= 0 ? 'opacity-40 grayscale' : ''}`}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
-                                        {product.stock <= 0 ? (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
-                                                <span className="px-4 py-2 bg-white text-black text-xs font-bold rounded-full uppercase tracking-[0.2em] shadow-xl">
-                                                    Sold Out
-                                                </span>
-                                            </div>
-                                        ) : product.isNew && (
-                                            <span className="absolute top-4 left-4 px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-semibold rounded-full">
+                                        {product.isNew && (
+                                            <span
+                                                className="absolute top-4 left-4 px-3 py-1 bg-linear-to-r from-emerald-500 to-teal-500 text-slate-950 text-xs font-semibold rounded-full">
                                                 New Arrival
                                             </span>
                                         )}
-                                        <button className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-emerald-500">
-                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        <button
+                                            className="absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-emerald-500">
+                                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                                             </svg>
                                         </button>
                                     </div>
                                     <div className="p-4">
-                                        <p className={`text-sm ${mutedText} mb-1`}>{product.category}</p>
-                                        <h3 className="font-semibold mb-2">{product.name}</h3>
+                                        <p className={`text-sm ${mutedText} mb-1`}>{product.category.toUpperCase()}</p>
+                                        <h3 className="font-semibold mb-2 line-clamp-1">{product.name}</h3>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-xl font-bold text-emerald-500">Rs.{product.price}</span>
-                                            <div className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 group-hover:scale-105">
-                                                View Details
+                                            <span
+                                                className="text-xl font-bold text-emerald-500">Rs.{product.price}</span>
+                                            <div
+                                                className="px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-500 text-slate-950 text-sm font-semibold rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-300 group-hover:scale-105">
+                                                View
                                             </div>
                                         </div>
                                     </div>
@@ -387,113 +490,8 @@ function Home() {
                 </div>
             </section>
 
-            {/* Stats Section */}
-            {/*<section */}
-            {/*    ref={statsRef}*/}
-            {/*    id="stats"*/}
-            {/*    className="py-20 px-4 relative overflow-hidden"*/}
-            {/*>*/}
-            {/*    <div className="absolute inset-0 opacity-10">*/}
-            {/*        <img */}
-            {/*            src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=2070&auto=format&fit=crop" */}
-            {/*            alt="Pattern"*/}
-            {/*            className="w-full h-full object-cover"*/}
-            {/*        />*/}
-            {/*    </div>*/}
-            {/*    <div className="container mx-auto relative z-10">*/}
-            {/*        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">*/}
-            {/*            {[*/}
-            {/*                { label: 'Happy Customers', value: counts.customers, suffix: '+' },*/}
-            {/*                { label: 'Products', value: counts.products, suffix: '+' },*/}
-            {/*                { label: 'Years of Excellence', value: counts.years, suffix: '' },*/}
-            {/*                { label: 'Store Locations', value: counts.stores, suffix: '' },*/}
-            {/*            ].map((stat, index) => (*/}
-            {/*                <div*/}
-            {/*                    key={stat.label}*/}
-            {/*                    className={`text-center transform transition-all duration-1000 ${*/}
-            {/*                        isVisible.stats ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'*/}
-            {/*                    }`}*/}
-            {/*                    style={{ transitionDelay: `${index * 200}ms` }}*/}
-            {/*                >*/}
-            {/*                    <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent mb-2">*/}
-            {/*                        {Math.round(stat.value)}{stat.suffix}*/}
-            {/*                    </div>*/}
-            {/*                    <div className={`${mutedText}`}>{stat.label}</div>*/}
-            {/*                </div>*/}
-            {/*            ))}*/}
-            {/*        </div>*/}
-            {/*    </div>*/}
-            {/*</section>*/}
 
-            {/* Testimonials */}
-            {/*<section className="py-20 px-4 bg-white/5">*/}
-            {/*    <div className="container mx-auto">*/}
-            {/*        <div className="text-center mb-12">*/}
-            {/*            <h2 className="text-4xl font-bold mb-4">What Our Customers Say</h2>*/}
-            {/*            <p className={`${mutedText} max-w-2xl mx-auto`}>*/}
-            {/*                Join thousands of satisfied customers who love Urban Wear*/}
-            {/*            </p>*/}
-            {/*        </div>*/}
-
-            {/*        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">*/}
-            {/*            {testimonials.map((testimonial, index) => (*/}
-            {/*                <div*/}
-            {/*                    key={testimonial.name}*/}
-            {/*                    className="bg-white/5 backdrop-blur-sm rounded-xl p-6 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-500 hover:scale-105 animate-fade-in-up"*/}
-            {/*                    style={{ animationDelay: `${index * 200}ms` }}*/}
-            {/*                >*/}
-            {/*                    <div className="flex items-center mb-4">*/}
-            {/*                        <img */}
-            {/*                            src={testimonial.image} */}
-            {/*                            alt={testimonial.name}*/}
-            {/*                            className="w-12 h-12 rounded-full object-cover mr-4"*/}
-            {/*                        />*/}
-            {/*                        <div>*/}
-            {/*                            <h4 className="font-semibold">{testimonial.name}</h4>*/}
-            {/*                            <p className={`text-sm ${mutedText}`}>{testimonial.role}</p>*/}
-            {/*                        </div>*/}
-            {/*                    </div>*/}
-            {/*                    <div className="flex mb-3">*/}
-            {/*                        {[...Array(testimonial.rating)].map((_, i) => (*/}
-            {/*                            <svg key={i} className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">*/}
-            {/*                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />*/}
-            {/*                            </svg>*/}
-            {/*                        ))}*/}
-            {/*                    </div>*/}
-            {/*                    <p className={`${mutedText} italic`}>"{testimonial.content}"</p>*/}
-            {/*                </div>*/}
-            {/*            ))}*/}
-            {/*        </div>*/}
-            {/*    </div>*/}
-            {/*</section>*/}
-
-            {/* CTA Section */}
-            <section className="py-20 px-4 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-900 to-teal-900"></div>
-                <div className="absolute inset-0 opacity-20">
-                    <img 
-                        src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=2070&auto=format&fit=crop" 
-                        alt="Pattern"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-                <div className="container mx-auto relative z-10 text-center">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6 animate-pulse">
-                        Ready to Upgrade Your Style?
-                    </h2>
-                    <p className="text-base sm:text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                        Join the Urban Wear community today and get 15% off your first order
-                    </p>
-                    <Link 
-                        to="/shirt" 
-                        className="inline-block w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-emerald-900 font-bold rounded-full hover:shadow-xl hover:shadow-white/30 transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white"
-                    >
-                        Explore Now
-                    </Link>
-                </div>
-            </section>
-
-            <Footer className="relative z-20" />
+            <Footer className="relative z-20"/>
 
             <style>{`
                 @keyframes kenBurns {
