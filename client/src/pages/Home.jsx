@@ -493,7 +493,7 @@ function Home() {
                 </div>
             </section>
 
-            <Footer />
+            <Footer className="relative z-20" />
 
             <style>{`
                 @keyframes kenBurns {

@@ -212,7 +212,7 @@ function Shirt() {
                             </div>
 
                             {/* Search Bar */}
-                            <div className="relative w-full md:w-96">
+                            <div className="relative w-full md:w-96 group">
                                 <div
                                     className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
                                 <div className="relative">
@@ -553,7 +553,7 @@ function Shirt() {
                     {/*)}*/}
                 </div>
             </main>
-            <Footer/>
+            <Footer className="relative z-20" />
         </div>
     );
 }

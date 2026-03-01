@@ -87,7 +87,7 @@ function ProductDetail() {
                     <h1 className="text-2xl font-bold mb-4">{error || "Product not found"}</h1>
                     <Link to="/shirt" className="text-emerald-500 hover:underline">Back to Store</Link>
                 </main>
-                <Footer />
+                <Footer className="relative z-20" />
             </div>
         );
     }
@@ -356,7 +356,7 @@ function ProductDetail() {
                 </div>
             </main>
 
-            <Footer />
+            <Footer className="relative z-20" />
         </div>
     );
 }

@@ -92,7 +92,7 @@ function Sale() {
                     )}
                 </div>
             </main>
-            <Footer />
+            <Footer className="relative z-20" />
         </div>
     );
 }

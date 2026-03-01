@@ -202,7 +202,7 @@ function TrackOrder() {
                     )}
                 </div>
             </main>
-            <Footer />
+            <Footer className="relative z-20" />
         </div>
     );
 }

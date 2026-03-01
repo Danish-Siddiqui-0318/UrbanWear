@@ -398,7 +398,7 @@ function Oversized_Shirt() {
                     {/*)}*/}
                 </div>
             </main>
-            <Footer />
+            <Footer className="relative z-20" />
         </div>
     );
 }
