@@ -169,14 +169,14 @@ function Trouser() {
                                 onClick={() => setShowFilters(!showFilters)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="white" stroke="white" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                                 </svg>
-                                <span className="text-sm font-medium">Filters</span>
+                                <span className="text-sm font-medium text-white">Filters</span>
                             </button>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-400">Showing</span>
+                                <span className="text-sm text-white">Showing</span>
                                 <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium">
                                     {filteredProducts.length} {filteredProducts.length === 1 ? 'Style' : 'Styles'}
                                 </span>
@@ -209,12 +209,11 @@ function Trouser() {
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="flex-1 lg:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                                className="flex-1 lg:flex-none text-black bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm  focus:border-emerald-500 focus:outline-none"
                             >
                                 <option value="newest">✨ Newest First</option>
                                 <option value="price-low">💰 Price: Low to High</option>
                                 <option value="price-high">💰 Price: High to Low</option>
-                                <option value="popular">⭐ Most Popular</option>
                             </select>
                         </div>
                     </div>

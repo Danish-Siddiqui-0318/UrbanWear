@@ -160,14 +160,14 @@ function Oversized_Shirt() {
                                 onClick={() => setShowFilters(!showFilters)}
                                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
                             >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="white" stroke="white" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                                 </svg>
-                                <span className="text-sm font-medium">Filters</span>
+                                <span className="text-sm font-medium text-white">Filters</span>
                             </button>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-400">Showing</span>
+                                <span className="text-sm text-white">Showing</span>
                                 <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-sm font-medium">
                                     {filteredProducts.length} {filteredProducts.length === 1 ? 'Style' : 'Styles'}
                                 </span>
@@ -189,12 +189,11 @@ function Oversized_Shirt() {
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
-                                className="flex-1 lg:flex-none bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+                                className="flex-1 lg:flex-none bg-white/5 border text-black border-white/10 rounded-xl px-4 py-2 text-sm  focus:border-emerald-500 focus:outline-none"
                             >
                                 <option value="newest">✨ Newest First</option>
                                 <option value="price-low">💰 Price: Low to High</option>
                                 <option value="price-high">💰 Price: High to Low</option>
-                                <option value="popular">⭐ Most Popular</option>
                             </select>
                         </div>
                     </div>
@@ -333,7 +332,7 @@ function Oversized_Shirt() {
                                             </div>
                                         </div>
 
-                                        <h3 className="text-base font-semibold text-white group-hover:text-emerald-400 transition-colors duration-300 line-clamp-1">
+                                        <h3 className="text-base font-semibold text-black group-hover:text-emerald-400 transition-colors duration-300 line-clamp-1">
                                             {product.name}
                                         </h3>
 
@@ -356,41 +355,41 @@ function Oversized_Shirt() {
                     )}
 
                     {/* Style Guide Section */}
-                    {!loading && filteredProducts.length > 0 && (
-                        <div className="mt-12 pt-8 border-t border-white/5">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/5">
-                                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                                        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="text-lg font-semibold text-white mb-2">How to Style</h4>
-                                    <p className="text-sm text-gray-400">Pair with cargo pants or joggers for the perfect streetwear look.</p>
-                                </div>
+                    {/*{!loading && filteredProducts.length > 0 && (*/}
+                    {/*    <div className="mt-12 pt-8 border-t border-white/5">*/}
+                    {/*        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">*/}
+                    {/*            <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/5">*/}
+                    {/*                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">*/}
+                    {/*                    <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">*/}
+                    {/*                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />*/}
+                    {/*                    </svg>*/}
+                    {/*                </div>*/}
+                    {/*                <h4 className="text-lg font-semibold text-white mb-2">How to Style</h4>*/}
+                    {/*                <p className="text-sm text-gray-400">Pair with cargo pants or joggers for the perfect streetwear look.</p>*/}
+                    {/*            </div>*/}
 
-                                <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/5">
-                                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                                        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="text-lg font-semibold text-white mb-2">Size Guide</h4>
-                                    <p className="text-sm text-gray-400">Check our detailed size guide to find your perfect oversized fit.</p>
-                                </div>
+                    {/*            <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/5">*/}
+                    {/*                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">*/}
+                    {/*                    <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">*/}
+                    {/*                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />*/}
+                    {/*                    </svg>*/}
+                    {/*                </div>*/}
+                    {/*                <h4 className="text-lg font-semibold text-white mb-2">Size Guide</h4>*/}
+                    {/*                <p className="text-sm text-gray-400">Check our detailed size guide to find your perfect oversized fit.</p>*/}
+                    {/*            </div>*/}
 
-                                <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/5">
-                                    <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">
-                                        <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                                        </svg>
-                                    </div>
-                                    <h4 className="text-lg font-semibold text-white mb-2">Care Instructions</h4>
-                                    <p className="text-sm text-gray-400">Machine wash cold, tumble dry low for lasting comfort.</p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/*            <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500/5 to-teal-500/5 border border-white/5">*/}
+                    {/*                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-4">*/}
+                    {/*                    <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">*/}
+                    {/*                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />*/}
+                    {/*                    </svg>*/}
+                    {/*                </div>*/}
+                    {/*                <h4 className="text-lg font-semibold text-white mb-2">Care Instructions</h4>*/}
+                    {/*                <p className="text-sm text-gray-400">Machine wash cold, tumble dry low for lasting comfort.</p>*/}
+                    {/*            </div>*/}
+                    {/*        </div>*/}
+                    {/*    </div>*/}
+                    {/*)}*/}
                 </div>
             </main>
             <Footer />
