@@ -124,7 +124,7 @@ function TrackOrder() {
                             {orders.length === 0 ? (
                                 <div className={`p-10 rounded-3xl border ${secondaryBorder} bg-neutral-50 text-center`}>
                                     <p className={mutedText}>No orders found for this email address.</p>
-                                    <Link to="/shop" className="text-emerald-500 text-sm font-bold mt-4 inline-block hover:underline">Start Shopping</Link>
+                                    <Link to="/shirt" className="text-emerald-500 text-sm font-bold mt-4 inline-block hover:underline">Start Shopping</Link>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
@@ -148,15 +148,31 @@ function TrackOrder() {
                                             </div>
                                             
                                             <div className="p-6 bg-neutral-50">
-                                                <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+                                                <div className="flex flex-col gap-4">
                                                     {order.items.map((item, idx) => (
-                                                        <div key={idx} className="flex-shrink-0 w-20 flex flex-col gap-2">
-                                                            <div className="aspect-[4/5] rounded-xl overflow-hidden bg-neutral-900">
-                                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                                        <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl border border-neutral-100 bg-white shadow-sm">
+                                                            <div className="w-16 h-20 flex-shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-neutral-100">
+                                                                <img 
+                                                                    src={item.image || "https://images.unsplash.com/photo-1556821840-3a63f95609a7?q=80&w=1974&auto=format&fit=crop"} 
+                                                                    alt={item.name} 
+                                                                    className="w-full h-full object-cover" 
+                                                                />
                                                             </div>
-                                                            <p className="text-[9px] font-bold text-neutral-400 truncate uppercase tracking-tighter">
-                                                                {item.quantity}x {item.size}
-                                                            </p>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-bold text-neutral-900 truncate mb-1">{item.name}</p>
+                                                                <div className="flex items-center gap-3">
+                                                                    <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">
+                                                                        Qty: {item.quantity}
+                                                                    </p>
+                                                                    <span className="w-1 h-1 rounded-full bg-neutral-300"></span>
+                                                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                                                                        Size: {item.size || 'N/A'}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-xs font-bold text-neutral-900">Rs.{item.price * item.quantity}</p>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>

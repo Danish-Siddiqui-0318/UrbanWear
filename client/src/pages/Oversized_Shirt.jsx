@@ -22,16 +22,22 @@ function Oversized_Shirt() {
             try {
                 setLoading(true);
                 const response = await axios.get(`${API_BASE_URL}/products/products`, {
-                    params: { page: 1, limit: 100 }
+                    params: { 
+                        page: 1, 
+                        limit: 100,
+                        status: 'active'
+                    }
                 });
 
-                const oversizedProducts = (response.data.products || []).filter(product =>
-                    product.category?.toLowerCase() === "oversized" ||
-                    product.category?.toLowerCase() === "oversized-shirt" ||
-                    product.category?.toLowerCase() === "oversized shirts" ||
-                    product.category?.toLowerCase() === "oversized_shirt" ||
-                    product.name?.toLowerCase().includes("oversized")
-                );
+                const oversizedProducts = (response.data.products || []).filter(product => {
+                    const cat = (product.category || "").toLowerCase();
+                    const name = (product.name || "").toLowerCase();
+                    
+                    return cat.includes("oversized") || 
+                           name.includes("oversized") || 
+                           cat === "oversized-shirt" || 
+                           cat === "oversized_shirt";
+                });
 
                 setProducts(oversizedProducts);
             } catch (error) {
@@ -90,7 +96,7 @@ function Oversized_Shirt() {
                 ))}
             </div>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes float {
                     0%, 100% { transform: translateY(0) translateX(0); }
                     50% { transform: translateY(-15px) translateX(10px); }

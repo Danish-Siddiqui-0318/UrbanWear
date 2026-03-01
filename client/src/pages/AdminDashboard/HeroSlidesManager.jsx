@@ -132,7 +132,7 @@ const HeroSlidesManager = ({
                     </div>
                     <div>
                         <label className="block text-[11px] font-medium mb-1">Button link</label>
-                        <input type="text" value={slideButtonLink} onChange={(e) => setSlideButtonLink(e.target.value)} className={`w-full rounded-lg border ${primaryBorder} bg-white px-3 py-2 text-xs outline-none focus:border-neutral-900 focus:ring-0`} placeholder="/shop" />
+                        <input type="text" value={slideButtonLink} onChange={(e) => setSlideButtonLink(e.target.value)} className={`w-full rounded-lg border ${primaryBorder} bg-white px-3 py-2 text-xs outline-none focus:border-neutral-900 focus:ring-0`} placeholder="/shirt" />
                     </div>
                     <div>
                         <label className="block text-[11px] font-medium mb-1">Sort order</label>

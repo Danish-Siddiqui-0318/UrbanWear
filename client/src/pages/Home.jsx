@@ -239,7 +239,7 @@ function Home() {
                             </Link>
                         ) : (
                             <Link 
-                                to="/shop" 
+                                to="/shirt" 
                                 className={`w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-semibold rounded-full hover:shadow-xl hover:shadow-emerald-500/40 transition-all duration-300 hover:scale-105`}
                             >
                                 Shop Now
@@ -485,10 +485,10 @@ function Home() {
                         Join the Urban Wear community today and get 15% off your first order
                     </p>
                     <Link 
-                        to="/shop" 
-                        className="inline-block w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-emerald-900 font-semibold rounded-full hover:shadow-xl hover:shadow-white/30 transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white"
+                        to="/shirt" 
+                        className="inline-block w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-emerald-900 font-bold rounded-full hover:shadow-xl hover:shadow-white/30 transition-all duration-300 hover:scale-105 hover:bg-gradient-to-r hover:from-emerald-500 hover:to-teal-500 hover:text-white"
                     >
-                        Shop Now
+                        Explore Now
                     </Link>
                 </div>
             </section>

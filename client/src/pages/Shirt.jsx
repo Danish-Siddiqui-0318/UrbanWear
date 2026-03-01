@@ -36,12 +36,20 @@ function Shirt() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const [productsRes, categoriesRes] = await Promise.all([
-                    axios.get(`${API_BASE_URL}/products/products`, {params: {page: 1, limit: 100}}),
-                    axios.get(`${API_BASE_URL}/categories`)
-                ]);
-                setProducts(productsRes.data.products || []);
+                // Fetch all categories
+                const categoriesRes = await axios.get(`${API_BASE_URL}/categories`);
                 setCategories(categoriesRes.data.categories || []);
+
+                // Fetch products specifically for "shirt" category or similar from backend
+                // We'll broaden the search if needed, but primary fetch is for active shirts
+                const productsRes = await axios.get(`${API_BASE_URL}/products/products`, {
+                    params: { 
+                        page: 1, 
+                        limit: 100,
+                        status: 'active'
+                    }
+                });
+                setProducts(productsRes.data.products || []);
             } catch (error) {
                 console.error("Failed to fetch shop data", error);
             } finally {
@@ -53,16 +61,17 @@ function Shirt() {
 
     // Filter products to show only non-oversized shirts (flexible keys)
     const shirtProducts = products.filter(p => {
-        const key = (p.category || "").toLowerCase();
-        const isShirtLike =
-            key === "shirt" ||
-            key === "shirts" ||
-            key === "tshirt" ||
-            key === "tshirts" ||
-            key === "t-shirt" ||
-            key === "t-shirts" ||
-            (key.includes("shirt") && !key.includes("oversized"));
-        return isShirtLike;
+        const key = String(p.category || "").toLowerCase();
+        const name = String(p.name || "").toLowerCase();
+        
+        // If category is explicitly 'shirt' or 'shirts', always show
+        if (key === 'shirt' || key === 'shirts' || key === 'tshirt' || key === 't-shirt') return true;
+        
+        // Match "shirt" in category or name but exclude "oversized"
+        const hasShirtWord = key.includes("shirt") || name.includes("shirt");
+        const isOversized = key.includes("oversized") || name.includes("oversized");
+
+        return hasShirtWord && !isOversized;
     });
 
     // Apply all filters
@@ -126,7 +135,7 @@ function Shirt() {
                 ))}
             </div>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes float {
                     0%, 100% {
                         transform: translateY(0) translateX(0);

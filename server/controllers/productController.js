@@ -157,9 +157,9 @@ async function getAllProducts(req, res) {
             filter.isFeatured = isFeaturedBool;
         }
         
-        // Handle category filter
+        // Handle category filter - Case-insensitive and flexible
         if (category && category !== 'all') {
-            filter.category = category;
+            filter.category = { $regex: new RegExp(`^${category}$`, 'i') };
         }
         
         // Handle status filter

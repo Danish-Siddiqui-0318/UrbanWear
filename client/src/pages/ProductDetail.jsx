@@ -85,7 +85,7 @@ function ProductDetail() {
                 <Navbar />
                 <main className="pt-32 pb-20 px-4 text-center">
                     <h1 className="text-2xl font-bold mb-4">{error || "Product not found"}</h1>
-                    <Link to="/shirt" className="text-emerald-500 hover:underline"> Shirt</Link>
+                    <Link to="/shirt" className="text-emerald-500 hover:underline">Back to Store</Link>
                 </main>
                 <Footer />
             </div>

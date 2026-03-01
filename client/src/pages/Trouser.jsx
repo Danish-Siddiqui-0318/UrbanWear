@@ -23,19 +23,25 @@ function Trouser() {
             try {
                 setLoading(true);
                 const response = await axios.get(`${API_BASE_URL}/products/products`, {
-                    params: { page: 1, limit: 100 }
+                    params: { 
+                        page: 1, 
+                        limit: 100,
+                        status: 'active'
+                    }
                 });
 
                 // Filter products to show only trousers
-                const trouserProducts = (response.data.products || []).filter(product =>
-                    product.category?.toLowerCase() === "trouser" ||
-                    product.category?.toLowerCase() === "trousers" ||
-                    product.category?.toLowerCase() === "pants" ||
-                    product.category?.toLowerCase() === "jeans" ||
-                    product.name?.toLowerCase().includes("trouser") ||
-                    product.name?.toLowerCase().includes("pants") ||
-                    product.name?.toLowerCase().includes("jeans")
-                );
+                const trouserProducts = (response.data.products || []).filter(product => {
+                    const cat = (product.category || "").toLowerCase();
+                    const name = (product.name || "").toLowerCase();
+                    
+                    return cat.includes("trouser") || 
+                           cat.includes("pant") || 
+                           cat.includes("jeans") || 
+                           name.includes("trouser") || 
+                           name.includes("pant") || 
+                           name.includes("jeans");
+                });
 
                 setProducts(trouserProducts);
             } catch (error) {

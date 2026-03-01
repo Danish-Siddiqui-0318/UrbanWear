@@ -5,11 +5,10 @@ const orderItemSchema = new mongoose.Schema(
         product: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Products",
-            required: true,
+            // Required for new orders, but handled gracefully for old ones
         },
         name: {
             type: String,
-            required: true,
         },
         price: {
             type: Number,
@@ -22,6 +21,10 @@ const orderItemSchema = new mongoose.Schema(
             min: 1,
         },
         size: {
+            type: String,
+            default: "",
+        },
+        image: {
             type: String,
             default: "",
         },

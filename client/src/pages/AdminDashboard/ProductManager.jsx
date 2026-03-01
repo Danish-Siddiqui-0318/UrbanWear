@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { secondaryBorder, cardBackground, mutedText, primaryBorder, primaryGradient, accentText, accentBadgeBorder, accentBadgeBackground } from "../../theme/colors";
 import { API_BASE_URL } from "../../config/api";
@@ -195,6 +195,17 @@ const ProductManager = ({
         }
     };
 
+    // Ensure a sane default category on create when categories load
+    useEffect(() => {
+        if (mode === "create" && Array.isArray(categories) && categories.length > 0) {
+            const firstActive = categories.find((c) => c.isActive) || categories[0];
+            if (firstActive && categoryInput !== firstActive.key) {
+                setCategoryInput(firstActive.key);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [categories, mode]);
+
     const startEditProduct = (product) => {
         setMode("edit");
         setEditingProductId(product._id);
@@ -230,7 +241,13 @@ const ProductManager = ({
         setDescriptionInput("");
         setPriceInput("");
         setStockInput("");
-        setCategoryInput("hoodies");
+        // Default to first active category if available
+        if (Array.isArray(categories) && categories.length > 0) {
+            const firstActive = categories.find((c) => c.isActive) || categories[0];
+            setCategoryInput(firstActive?.key || "hoodies");
+        } else {
+            setCategoryInput("hoodies");
+        }
         setSizesInput({ s: false, m: false, l: false, xl: false });
         setDiscountInput("");
         setDiscountTypeInput("percent");
@@ -433,18 +450,34 @@ const ProductManager = ({
 
                 <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px]">
                     <span className={`${mutedText}`}>Filter by category:</span>
-                    <button type="button" onClick={() => setSelectedCategoryFilter("all")} className={`rounded-full border px-2 py-1 ${selectedCategoryFilter === "all" ? `${accentBadgeBorder} ${accentBadgeBackground} text-neutral-900` : `${primaryBorder} text-neutral-700`} text-[11px] transition`}>All</button>
-                    {categories.filter(cat => cat.isActive).map(cat => (
-                        <button key={cat._id} type="button" onClick={() => setSelectedCategoryFilter(cat.key)} className={`rounded-full border px-2 py-1 ${selectedCategoryFilter === cat.key ? `${accentBadgeBorder} ${accentBadgeBackground} text-neutral-900` : `${primaryBorder} text-neutral-700`} text-[11px] transition`}>{cat.name}</button>
-                    ))}
+                    <button 
+                        type="button" 
+                        onClick={() => setSelectedCategoryFilter("all")} 
+                        className={`rounded-full border px-3 py-1 ${selectedCategoryFilter === "all" ? `${accentBadgeBorder} ${accentBadgeBackground} text-neutral-900` : `${primaryBorder} text-neutral-700`} text-[11px] transition`}
+                    >
+                        All ({products.length})
+                    </button>
+                    {categories.map(cat => {
+                        const count = products.filter(p => String(p.category || "").toLowerCase() === String(cat.key).toLowerCase()).length;
+                        return (
+                            <button 
+                                key={cat._id} 
+                                type="button" 
+                                onClick={() => setSelectedCategoryFilter(cat.key)} 
+                                className={`rounded-full border px-3 py-1 ${selectedCategoryFilter === cat.key ? `${accentBadgeBorder} ${accentBadgeBackground} text-neutral-900` : `${primaryBorder} text-neutral-700`} text-[11px] transition`}
+                            >
+                                {cat.name} ({count})
+                            </button>
+                        );
+                    })}
                 </div>
 
                 {loadingProducts ? <p className="text-xs">Loading products...</p> : productsError ? <p className="text-xs text-red-600">{productsError}</p> : products.length === 0 ? <p className="text-xs">No products yet.</p> : (
                     <div className="space-y-3 max-h-96 overflow-y-auto pr-1">
                         {products
                             .filter(p => {
-                                const matchesCategory = selectedCategoryFilter === "all" ? true : p.category === selectedCategoryFilter;
-                                const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+                                const matchesCategory = selectedCategoryFilter === "all" ? true : String(p.category || "").toLowerCase() === String(selectedCategoryFilter).toLowerCase();
+                                const matchesSearch = (p.name || "").toLowerCase().includes(searchQuery.toLowerCase());
                                 return matchesCategory && matchesSearch;
                             })
                             .map(p => (

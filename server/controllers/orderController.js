@@ -9,6 +9,7 @@ async function createOrder(req, res) {
             customerName,
             customerEmail,
             customerPhone,
+            phone, // Fallback from frontend
             shippingAddress,
             paymentMethod,
             notes,
@@ -18,7 +19,7 @@ async function createOrder(req, res) {
             return res.status(400).json({ message: "Order items are required" });
         }
 
-        if (typeof total !== "number") {
+        if (total === undefined || total === null) {
             return res.status(400).json({ message: "Total amount is required" });
         }
 
@@ -30,13 +31,13 @@ async function createOrder(req, res) {
 
         const order = await OrderModel.create({
             items,
-            total,
+            total: Number(total),
             customerName,
             customerEmail,
-            customerPhone,
+            customerPhone: customerPhone || phone || "",
             shippingAddress,
             paymentMethod: paymentMethod || "cod",
-            notes,
+            notes: notes || "",
         });
 
         return res.status(201).json({
@@ -44,18 +45,64 @@ async function createOrder(req, res) {
             order,
         });
     } catch (error) {
+        console.error("Error creating order:", error);
         return res.status(500).json({
             message: error.message || "Failed to create order",
+            error: error.errors // Include detailed validation errors if any
         });
     }
 }
 
 async function getOrders(req, res) {
     try {
-        const orders = await OrderModel.find().sort({ createdAt: -1 }).limit(100);
+        const orders = await OrderModel.find()
+            .populate("items.product", "name images")
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .lean();
+
+        const processedOrders = await Promise.all(orders.map(async (order) => {
+            const items = await Promise.all(order.items.map(async (item) => {
+                const productId = item.product || item.productId;
+                let recoveredName = item.name;
+                let recoveredImage = item.image;
+
+                if (!recoveredName || !recoveredImage) {
+                    if (item.product && typeof item.product === 'object') {
+                        recoveredName = recoveredName || item.product.name;
+                        recoveredImage = recoveredImage || (item.product.images && item.product.images[0]?.url);
+                    } 
+                    
+                    if ((!recoveredName || !recoveredImage) && productId) {
+                        try {
+                            const p = await ProductModel.findById(productId).select('name images');
+                            if (p) {
+                                recoveredName = recoveredName || p.name;
+                                recoveredImage = recoveredImage || (p.images && p.images[0]?.url);
+                            }
+                        } catch (e) {
+                            console.error("Recovery fetch failed:", e);
+                        }
+                    }
+                }
+
+                return {
+                    ...item,
+                    product: productId,
+                    name: recoveredName || "Product",
+                    image: recoveredImage || ""
+                };
+            }));
+
+            return {
+                ...order,
+                items
+            };
+        }));
+
         return res.status(200).json({
             success: true,
-            orders,
+            orders: processedOrders,
         });
     } catch (error) {
         return res.status(500).json({
@@ -230,13 +277,52 @@ async function getProductPerformance(req, res) {
 async function getOrderById(req, res) {
     try {
         const id = req.params.id;
-        const order = await OrderModel.findById(id);
+        const order = await OrderModel.findById(id)
+            .populate("items.product", "name images")
+            .lean();
+
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
+
+        const items = await Promise.all(order.items.map(async (item) => {
+            const productId = item.product || item.productId;
+            let recoveredName = item.name;
+            let recoveredImage = item.image;
+
+            if (!recoveredName || !recoveredImage) {
+                if (item.product && typeof item.product === 'object') {
+                    recoveredName = recoveredName || item.product.name;
+                    recoveredImage = recoveredImage || (item.product.images && item.product.images[0]?.url);
+                } 
+                
+                if ((!recoveredName || !recoveredImage) && productId) {
+                    try {
+                        const p = await ProductModel.findById(productId).select('name images');
+                        if (p) {
+                            recoveredName = recoveredName || p.name;
+                            recoveredImage = recoveredImage || (p.images && p.images[0]?.url);
+                        }
+                    } catch (e) {
+                        console.error("Recovery fetch failed:", e);
+                    }
+                }
+            }
+
+            return {
+                ...item,
+                product: productId,
+                name: recoveredName || "Product",
+                image: recoveredImage || ""
+            };
+        }));
+
         return res.status(200).json({
             success: true,
-            order,
+            order: {
+                ...order,
+                items
+            },
         });
     } catch (error) {
         return res.status(500).json({
@@ -285,11 +371,59 @@ async function getOrdersByCustomerEmail(req, res) {
         const orders = await OrderModel.find({
             customerEmail: { $regex: new RegExp(`^${esc}$`, "i") },
         })
+            .populate("items.product", "name images")
             .sort({ createdAt: -1 })
-            .limit(100);
+            .limit(100)
+            .lean(); // Use lean() to handle legacy data keys
+
+        // Map through orders to ensure each item has name and image (recovery for legacy orders)
+        const processedOrders = await Promise.all(orders.map(async (order) => {
+            const items = await Promise.all(order.items.map(async (item) => {
+                // 1. Handle legacy ID field (productId vs product)
+                const productId = item.product || item.productId;
+                
+                // 2. If name or image is missing, try to recover from populated product or direct DB fetch
+                let recoveredName = item.name;
+                let recoveredImage = item.image;
+
+                if (!recoveredName || !recoveredImage) {
+                    // Try populated data first
+                    if (item.product && typeof item.product === 'object') {
+                        recoveredName = recoveredName || item.product.name;
+                        recoveredImage = recoveredImage || (item.product.images && item.product.images[0]?.url);
+                    } 
+                    
+                    // If still missing and we have an ID, fetch from DB
+                    if ((!recoveredName || !recoveredImage) && productId) {
+                        try {
+                            const p = await ProductModel.findById(productId).select('name images');
+                            if (p) {
+                                recoveredName = recoveredName || p.name;
+                                recoveredImage = recoveredImage || (p.images && p.images[0]?.url);
+                            }
+                        } catch (e) {
+                            console.error("Recovery fetch failed:", e);
+                        }
+                    }
+                }
+
+                return {
+                    ...item,
+                    product: productId, // Ensure a consistent ID field
+                    name: recoveredName || "Product",
+                    image: recoveredImage || ""
+                };
+            }));
+
+            return {
+                ...order,
+                items
+            };
+        }));
+
         return res.status(200).json({
             success: true,
-            orders,
+            orders: processedOrders,
         });
     } catch (error) {
         return res.status(500).json({

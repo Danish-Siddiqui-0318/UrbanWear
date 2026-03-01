@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -49,17 +49,20 @@ function Checkout() {
 
         try {
             const orderData = {
-                ...formData,
+                customerName: formData.customerName,
+                customerEmail: formData.customerEmail,
+                customerPhone: formData.phone,
+                shippingAddress: formData.shippingAddress,
                 items: cart.map(item => ({
-                    productId: item._id,
+                    product: item._id || item.id,
                     name: item.name,
                     quantity: item.quantity,
                     price: item.price,
-                    size: item.size,
-                    image: item.image
+                    size: item.size || "",
+                    image: item.image || ""
                 })),
                 total,
-                status: "pending"
+                paymentMethod: "cod"
             };
 
             const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
