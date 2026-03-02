@@ -23,8 +23,6 @@ async function createCategory(req, res) {
             key: key.toLowerCase(),
         });
 
-        req.io.emit("categories-updated");
-
         return res.status(201).json({
             success: true,
             category,
@@ -67,8 +65,6 @@ async function updateCategory(req, res) {
             return res.status(404).json({ message: "Category not found" });
         }
 
-        req.io.emit("categories-updated");
-
         return res.status(200).json({
             success: true,
             category,
@@ -98,8 +94,6 @@ async function deleteCategory(req, res) {
         }
 
         await CategoryModel.findByIdAndDelete(id);
-
-        req.io.emit("categories-updated");
 
         return res.status(200).json({
             success: true,

@@ -10,7 +10,7 @@ import {
     mutedText,
     primaryGradient,
 } from "../theme/colors";
-import { API_BASE_URL } from "../config/api";
+import { API_BASE_URL, WHATSAPP_NUMBER, WHATSAPP_COUNTRY_CODE, SITE_URL } from "../config/api";
 
 function ProductDetail() {
     const { id } = useParams();
@@ -24,6 +24,7 @@ function ProductDetail() {
     const { addToCart } = useCart();
     const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
     const [showZoom, setShowZoom] = useState(false);
+    const [sizeError, setSizeError] = useState("");
 
     const handleMouseMove = (e) => {
         const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
@@ -39,9 +40,7 @@ function ProductDetail() {
                 const response = await axios.get(`${API_BASE_URL}/products/products/${id}`);
                 setProduct(response.data);
                 setActiveImage(0); // Reset to first image when product changes
-                if (response.data.sizes && response.data.sizes.length > 0) {
-                    setSelectedSize(response.data.sizes[0]);
-                }
+                setSelectedSize("");
                 
                 // Fetch related products (same category)
                 const relatedResponse = await axios.get(`${API_BASE_URL}/products/products`, {
@@ -64,11 +63,32 @@ function ProductDetail() {
     }, [id]);
 
     const handleAddToCart = () => {
+        setSizeError("");
         if (!selectedSize) {
-            alert("Please select a size");
+            setSizeError("Please select a size before adding to the cart.");
             return;
         }
         addToCart(product, quantity, selectedSize);
+    };
+
+    const handleWhatsAppOrder = () => {
+        setSizeError("");
+        if (!selectedSize) {
+            setSizeError("Please select a size before ordering on WhatsApp.");
+            return;
+        }
+
+        const baseSite = SITE_URL || window.location.origin;
+        const productUrl = `${baseSite}/product/${id}`;
+        const message = `${productUrl}\n\nHi, I'm interested in ordering the following product:\n\n*Product:* ${product.name}\n*Size:* ${selectedSize.toUpperCase()}\n*Quantity:* ${quantity}\n*Price:* Rs.${product.price}\n\nCould you please confirm the order and provide payment details?`;
+        const cc = WHATSAPP_COUNTRY_CODE ? WHATSAPP_COUNTRY_CODE.replace(/[^\d]/g, "") : "";
+        let phone = WHATSAPP_NUMBER && WHATSAPP_NUMBER.replace(/[^\d]/g, "");
+        if (phone && phone.startsWith("0") && cc) {
+            phone = `${cc}${phone.slice(1)}`;
+        }
+        const base = phone ? `https://wa.me/${phone}` : `https://wa.me/`;
+        const whatsappUrl = `${base}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, "_blank");
     };
 
     if (loading) {
@@ -263,6 +283,7 @@ function ProductDetail() {
                                         </button>
                                     ))}
                                 </div>
+                                {sizeError && <p className="text-red-500 text-xs mt-2">{sizeError}</p>}
                             </div>
 
                             {/* Quantity & Add to Cart */}
@@ -305,6 +326,18 @@ function ProductDetail() {
                                         </>
                                     )}
                                 </button>
+                                <button 
+                                    onClick={handleWhatsAppOrder}
+                                    disabled={product.stock <= 0}
+                                    className={`flex-1 h-14 font-bold rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 ${
+                                        product.stock <= 0 
+                                            ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed' 
+                                            : `bg-green-500 text-white hover:shadow-xl hover:shadow-green-500/30 hover:scale-[1.02] active:scale-[0.98]`
+                                    }`}
+                                >
+                                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.79.46 3.48 1.34 4.94l-1.48 5.45 5.59-1.45c1.41.83 3.02 1.26 4.7 1.26h.01c5.46 0 9.91-4.45 9.91-9.91s-4.45-9.91-9.91-9.91zM17.2 15.88c-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.42-.54-.42h-.46c-.18 0-.46.06-.7.3.24.24-.94.9-1.14 2.1-.2 1.2.62 2.44.7 2.62.08.18 1.48 2.26 3.6 3.2.5.22.9.36 1.22.46.5.16.96.14 1.32.08.4-.06 1.22-.5 1.4-1 .18-.5.18-.92.12-1-.06-.08-.22-.12-.46-.24z"/></svg>
+                                    Buy with WhatsApp
+                                </button>
                             </div>
 
                             {/* Trust Badges */}
@@ -328,7 +361,7 @@ function ProductDetail() {
                     {/* Related Products */}
                     {relatedProducts.length > 0 && (
                         <section className="pt-16 md:pt-20 border-t border-neutral-200">
-                            <h2 className="text-3xl font-bold mb-10">Complete the Look</h2>
+                            <h2 className="text-3xl font-bold mb-10">Goes well with...</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                 {relatedProducts.map((p) => (
                                     <Link 

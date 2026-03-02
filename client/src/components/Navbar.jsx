@@ -10,13 +10,25 @@ import {
 } from "../theme/colors";
 
 function Navbar({ variant = "public", name = "Admin", onLogout }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
-    const [cartCount, setCartCount] = useState(0);
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [navSearchQuery, setNavSearchQuery] = useState("");
     const navigate = useNavigate();
     const location = useLocation();
+    const [isOpen, setIsOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(() => {
+        if (typeof window !== "undefined") {
+            return location.pathname !== "/" ? true : window.scrollY > 20;
+        }
+        return false;
+    });
+    const [cartCount, setCartCount] = useState(() => {
+        const savedCart = typeof window !== "undefined" ? localStorage.getItem("urbanwear_cart") : null;
+        if (savedCart) {
+            const cart = JSON.parse(savedCart);
+            return cart.reduce((total, item) => total + item.quantity, 0);
+        }
+        return 0;
+    });
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [navSearchQuery, setNavSearchQuery] = useState("");
     const navTextClass = scrolled ? pageText : "text-white";
 
     const handleNavSearch = (e) => {
@@ -43,28 +55,16 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
         };
-        
-        // Use a timeout or move to initial state to avoid synchronous setState in effect
-        setTimeout(() => {
-            updateCartCount();
-        }, 0);
-        
-        window.addEventListener("scroll", handleScroll);
         window.addEventListener("cartUpdate", updateCartCount);
-        
+        if (location.pathname === "/") {
+            window.addEventListener("scroll", handleScroll);
+        }
         return () => {
-            window.removeEventListener("scroll", handleScroll);
+            if (location.pathname === "/") {
+                window.removeEventListener("scroll", handleScroll);
+            }
             window.removeEventListener("cartUpdate", updateCartCount);
         };
-    }, []);
-
-    // Ensure solid navbar on non-home routes for contrast
-    useEffect(() => {
-        if (location.pathname !== "/") {
-            setScrolled(true);
-        } else {
-            setScrolled(window.scrollY > 20);
-        }
     }, [location.pathname]);
 
     const navLinks = [
@@ -142,7 +142,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
                                 key={link.name}
                                 to={link.path}
                                 className={({ isActive }) => `
-                                    ${navTextClass} ${!scrolled ? 'drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]' : ''} transition-all duration-300 relative group
+                                    ${navTextClass} ${!scrolled ? 'drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]' : ''} transition-all duration-300 relative group font-bold
                                     ${isActive ? 'text-emerald-500' : 'hover:text-emerald-500'}
                                 `}
                             >

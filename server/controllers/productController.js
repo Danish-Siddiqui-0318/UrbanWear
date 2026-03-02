@@ -123,8 +123,6 @@ async function addProduct(req, res) {
             images: uploadedImages,
         });
 
-        req.io.emit("products-updated");
-
         res.status(201).json({
             success: true,
             product
@@ -246,9 +244,7 @@ async function updateProduct(req, res) {
             product.isFeatured = String(body.isFeatured).toLowerCase() === 'true';
         }
         
-        if (body.saleEndDate !== undefined) {
-            product.saleEndDate = body.saleEndDate ? new Date(body.saleEndDate) : null;
-        }
+        // Removed unused saleEndDate handling
 
         // Handle sizes
         if (body.sizes) {
@@ -307,7 +303,6 @@ async function updateProduct(req, res) {
         }
 
         await product.save();
-        req.io.emit("products-updated");
         res.status(200).json({ message: "Product updated successfully", product });
 
     } catch (error) {
@@ -352,7 +347,6 @@ async function deleteProduct(req, res) {
     if (!product) {
         return res.status(404).json({message: "Product not found"});
     }
-    req.io.emit("products-updated");
     res.status(200).json({message: "Product deleted"});
 }
 

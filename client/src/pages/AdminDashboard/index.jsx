@@ -19,7 +19,6 @@ import OrderManager from "./OrderManager";
 import AnalyticsSection from "./AnalyticsSection";
 import Sidebar from "./Sidebar";
 import OverviewGrid from "./OverviewGrid";
-import { socket } from "../../socket";
 
 function AdminDashboard() {
     const navigate = useNavigate();
@@ -78,12 +77,7 @@ function AdminDashboard() {
     const [heroSlidesError, setHeroSlidesError] = useState("");
     const [editingSlideId, setEditingSlideId] = useState(null);
     const [slideTitle, setSlideTitle] = useState("");
-    const [slideSubtitle, setSlideSubtitle] = useState("");
     const [slideImageUrl, setSlideImageUrl] = useState("");
-    const [slideButtonLabel, setSlideButtonLabel] = useState("");
-    const [slideButtonLink, setSlideButtonLink] = useState("");
-    const [slideIsActive, setSlideIsActive] = useState(true);
-    const [slideSortOrder, setSlideSortOrder] = useState("");
 
     // Analytics State
     const [orderStats, setOrderStats] = useState(null);
@@ -215,31 +209,6 @@ function AdminDashboard() {
         loadAll();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Effect for real-time updates via sockets
-    useEffect(() => {
-        socket.on("announcements-updated", fetchAnnouncementData);
-        socket.on("categories-updated", fetchCategoriesData);
-        socket.on("orders-updated", fetchOrdersData);
-        socket.on("products-updated", fetchProductsData);
-        socket.on("hero-slides-updated", fetchHeroSlidesData);
-
-        // Also, refresh stats when orders or products change
-        socket.on("orders-updated", fetchOrderStatsData);
-        socket.on("orders-updated", fetchProductPerformanceData);
-        socket.on("products-updated", fetchProductPerformanceData);
-
-        return () => {
-            socket.off("announcements-updated", fetchAnnouncementData);
-            socket.off("categories-updated", fetchCategoriesData);
-            socket.off("orders-updated", fetchOrdersData);
-            socket.off("products-updated", fetchProductsData);
-            socket.off("hero-slides-updated", fetchHeroSlidesData);
-            socket.off("orders-updated", fetchOrderStatsData);
-            socket.off("orders-updated", fetchProductPerformanceData);
-            socket.off("products-updated", fetchProductPerformanceData);
-        };
-    }, [fetchAnnouncementData, fetchCategoriesData, fetchOrdersData, fetchProductsData, fetchHeroSlidesData, fetchOrderStatsData, fetchProductPerformanceData]);
 
     const handleLogout = () => {
         localStorage.removeItem("token");
@@ -422,18 +391,8 @@ function AdminDashboard() {
                                     setEditingSlideId={setEditingSlideId}
                                     slideTitle={slideTitle}
                                     setSlideTitle={setSlideTitle}
-                                    slideSubtitle={slideSubtitle}
-                                    setSlideSubtitle={setSlideSubtitle}
                                     slideImageUrl={slideImageUrl}
                                     setSlideImageUrl={setSlideImageUrl}
-                                    slideButtonLabel={slideButtonLabel}
-                                    setSlideButtonLabel={setSlideButtonLabel}
-                                    slideButtonLink={slideButtonLink}
-                                    setSlideButtonLink={setSlideButtonLink}
-                                    slideIsActive={slideIsActive}
-                                    setSlideIsActive={setSlideIsActive}
-                                    slideSortOrder={slideSortOrder}
-                                    setSlideSortOrder={setSlideSortOrder}
                                     fetchHeroSlides={fetchHeroSlidesData}
                                 />
                             </div>

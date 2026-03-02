@@ -12,8 +12,10 @@ async function createOrder(req, res) {
             customerPhone,
             phone, // Fallback from frontend
             shippingAddress,
+            city,
+            postalCode,
+            country,
             paymentMethod,
-            notes,
         } = req.body;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
@@ -37,11 +39,19 @@ async function createOrder(req, res) {
             customerEmail,
             customerPhone: customerPhone || phone || "",
             shippingAddress,
+            city,
+            postalCode,
+            country,
             paymentMethod: paymentMethod || "cod",
-            notes: notes || "",
         });
 
-        req.io.emit("orders-updated");
+        // Atomically update stock for each item
+        for (const item of items) {
+            await ProductModel.updateOne(
+                { _id: item.product },
+                { $inc: { stock: -item.quantity } }
+            );
+        }
 
         return res.status(201).json({
             success: true,
@@ -117,9 +127,6 @@ async function getOrders(req, res) {
 async function getOrderStats(req, res) {
     try {
         const now = new Date();
-        const startOfToday = new Date(now);
-        startOfToday.setHours(0, 0, 0, 0);
-
         const sevenDaysAgo = new Date(now);
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -132,20 +139,6 @@ async function getOrderStats(req, res) {
             },
             {
                 $facet: {
-                    today: [
-                        {
-                            $match: {
-                                createdAt: { $gte: startOfToday },
-                            },
-                        },
-                        {
-                            $group: {
-                                _id: null,
-                                ordersCount: { $sum: 1 },
-                                revenue: { $sum: "$total" },
-                            },
-                        },
-                    ],
                     last7Days: [
                         {
                             $group: {
@@ -184,10 +177,6 @@ async function getOrderStats(req, res) {
             },
         ]);
 
-        const todayStats = (result && result.today && result.today[0]) || {
-            ordersCount: 0,
-            revenue: 0,
-        };
         const last7DaysStats =
             (result && result.last7Days && result.last7Days[0]) || {
                 ordersCount: 0,
@@ -196,10 +185,6 @@ async function getOrderStats(req, res) {
 
         return res.status(200).json({
             success: true,
-            today: {
-                ordersCount: todayStats.ordersCount || 0,
-                revenue: todayStats.revenue || 0,
-            },
             last7Days: {
                 ordersCount: last7DaysStats.ordersCount || 0,
                 revenue: last7DaysStats.revenue || 0,
@@ -249,16 +234,10 @@ async function getProductPerformance(req, res) {
                 },
             },
             {
-                $addFields: {
-                    category: "$productDoc.category",
-                },
-            },
-            {
                 $project: {
                     _id: 0,
                     productId: "$_id",
                     name: 1,
-                    category: 1,
                     totalSold: 1,
                     revenue: 1,
                 },
@@ -277,62 +256,6 @@ async function getProductPerformance(req, res) {
     }
 }
 
-async function getOrderById(req, res) {
-    try {
-        const id = req.params.id;
-        const order = await OrderModel.findById(id)
-            .populate("items.product", "name images")
-            .lean();
-
-        if (!order) {
-            return res.status(404).json({ message: "Order not found" });
-        }
-
-        const items = await Promise.all(order.items.map(async (item) => {
-            const productId = item.product || item.productId;
-            let recoveredName = item.name;
-            let recoveredImage = item.image;
-
-            if (!recoveredName || !recoveredImage) {
-                if (item.product && typeof item.product === 'object') {
-                    recoveredName = recoveredName || item.product.name;
-                    recoveredImage = recoveredImage || (item.product.images && item.product.images[0]?.url);
-                } 
-                
-                if ((!recoveredName || !recoveredImage) && productId) {
-                    try {
-                        const p = await ProductModel.findById(productId).select('name images');
-                        if (p) {
-                            recoveredName = recoveredName || p.name;
-                            recoveredImage = recoveredImage || (p.images && p.images[0]?.url);
-                        }
-                    } catch (e) {
-                        console.error("Recovery fetch failed:", e);
-                    }
-                }
-            }
-
-            return {
-                ...item,
-                product: productId,
-                name: recoveredName || "Product",
-                image: recoveredImage || ""
-            };
-        }));
-
-        return res.status(200).json({
-            success: true,
-            order: {
-                ...order,
-                items
-            },
-        });
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message || "Failed to load order",
-        });
-    }
-}
 
 async function updateOrderStatus(req, res) {
     try {
@@ -359,8 +282,6 @@ async function updateOrderStatus(req, res) {
 
         // Fetch the updated order to return it (using lean to avoid any validation)
         const updatedOrder = await OrderModel.findById(id).lean();
-
-        req.io.emit("orders-updated");
 
         return res.status(200).json({
             success: true,
@@ -450,7 +371,6 @@ async function getOrdersByCustomerEmail(req, res) {
 module.exports = {
     createOrder,
     getOrders,
-    getOrderById,
     updateOrderStatus,
     getOrderStats,
     getProductPerformance,

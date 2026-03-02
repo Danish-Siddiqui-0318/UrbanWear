@@ -22,24 +22,66 @@ function Checkout() {
         customerName: "",
         customerEmail: "",
         shippingAddress: "",
-        phone: ""
+        phone: "",
+        city: "",
+        postalCode: "",
+        country: "Pakistan",
     });
+    const [paymentMethod, setPaymentMethod] = useState("cod");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [orderSuccess, setOrderSuccess] = useState(null);
+    const [orderPlaced, setOrderPlaced] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const subtotal = getCartTotal();
     const shipping = subtotal > 8000 ? 0 : 250;
     const total = subtotal + shipping;
 
     useEffect(() => {
-        if (itemCount === 0 && !orderSuccess) {
+        if (itemCount === 0 && !orderPlaced) {
             navigate("/cart");
         }
-    }, [itemCount, navigate, orderSuccess]);
+    }, [itemCount, navigate, orderPlaced]);
 
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+        let err = "";
+        if (name === "customerName") {
+            err = value.trim().length >= 2 ? "" : "Enter at least 2 characters";
+        } else if (name === "customerEmail") {
+            err = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? "" : "Enter a valid email";
+        } else if (name === "phone") {
+            err = /^[0-9+\-\s]{10,14}$/.test(value) ? "" : "Enter a valid phone";
+        } else if (name === "shippingAddress") {
+            err = value.trim().length >= 10 ? "" : "Enter a complete address";
+        } else if (name === "city") {
+            err = value.trim().length >= 2 ? "" : "Enter a valid city";
+        } else if (name === "postalCode") {
+            err = value && !/^\d{5}$/.test(value) ? "Enter 5 digit postal code" : "";
+        }
+        setFieldErrors({ ...fieldErrors, [name]: err });
+    };
+
+    const validateAll = () => {
+        const checks = {
+            customerName: formData.customerName.trim().length >= 2,
+            customerEmail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.customerEmail),
+            phone: /^[0-9+\-\s]{10,14}$/.test(formData.phone),
+            shippingAddress: formData.shippingAddress.trim().length >= 10,
+            city: formData.city.trim().length >= 2,
+            postalCode: formData.postalCode ? /^\d{5}$/.test(formData.postalCode) : true
+        };
+        const nextErrors = {
+            customerName: checks.customerName ? "" : "Enter at least 2 characters",
+            customerEmail: checks.customerEmail ? "" : "Enter a valid email",
+            phone: checks.phone ? "" : "Enter a valid phone",
+            shippingAddress: checks.shippingAddress ? "" : "Enter a complete address",
+            city: checks.city ? "" : "Enter a valid city",
+            postalCode: checks.postalCode ? "" : "Enter 5 digit postal code",
+        };
+        setFieldErrors(nextErrors);
+        return Object.values(checks).every(Boolean);
     };
 
     const handleSubmit = async (e) => {
@@ -48,11 +90,19 @@ function Checkout() {
         setError("");
 
         try {
+            if (!validateAll()) {
+                setLoading(false);
+                setError("Please fix the highlighted fields.");
+                return;
+            }
             const orderData = {
                 customerName: formData.customerName,
                 customerEmail: formData.customerEmail,
                 customerPhone: formData.phone,
                 shippingAddress: formData.shippingAddress,
+                city: formData.city,
+                postalCode: formData.postalCode,
+                country: formData.country,
                 items: cart.map(item => ({
                     product: item._id || item.id,
                     name: item.name,
@@ -62,16 +112,19 @@ function Checkout() {
                     image: item.image || ""
                 })),
                 total,
-                paymentMethod: "cod"
+                paymentMethod: paymentMethod
             };
 
             const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
             
-            setOrderSuccess(response.data.order);
+            setOrderPlaced(true);
             clearCart();
             // Clear cart from storage immediately to update navbar
             localStorage.removeItem("urbanwear_cart");
             window.dispatchEvent(new Event("cartUpdate"));
+
+            // Redirect to the new order confirmation page
+            navigate("/order-confirmation", { state: { order: response.data.order } });
             
         } catch (err) {
             setError(err.response?.data?.message || "Failed to place order. Please try again.");
@@ -80,46 +133,7 @@ function Checkout() {
         }
     };
 
-    if (orderSuccess) {
-        return (
-            <div className={`min-h-screen ${pageBackground} ${pageText}`}>
-                <Navbar />
-                <main className="pt-32 pb-20 px-4">
-                    <div className="mx-auto max-w-xl text-center">
-                        <div className="mb-8 flex justify-center">
-                            <div className="w-24 h-24 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                        </div>
-                        <h1 className="text-4xl font-bold mb-4">Order Confirmed!</h1>
-                        <p className={`${mutedText} mb-2`}>
-                            Thank you for your order, <span className="text-neutral-900 font-bold">{orderSuccess.customerName}</span>.
-                        </p>
-                        <p className={`${mutedText} mb-8`}>
-                            Order ID: <span className="text-emerald-500 font-mono">#{orderSuccess._id}</span>
-                        </p>
-                        <div className="space-y-4">
-                            <Link 
-                                to="/shirt" 
-                                className={`inline-block w-full px-10 py-4 bg-gradient-to-r ${primaryGradient} text-slate-950 font-bold rounded-2xl hover:shadow-xl hover:shadow-emerald-500/20 transition-all duration-300`}
-                            >
-                                Continue Shopping
-                            </Link>
-                            <Link 
-                                to="/" 
-                                className="inline-block w-full text-sm font-bold text-neutral-500 hover:text-white transition-colors"
-                            >
-                                Back to Home
-                            </Link>
-                        </div>
-                    </div>
-                </main>
-                <Footer />
-            </div>
-        );
-    }
+
 
     return (
         <div className={`min-h-screen ${pageBackground} ${pageText}`}>
@@ -155,6 +169,7 @@ function Checkout() {
                                             placeholder="Enter your full name"
                                             className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
+                                        {fieldErrors.customerName && <p className="mt-1 text-[11px] text-red-600">{fieldErrors.customerName}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">Email Address</label>
@@ -167,6 +182,7 @@ function Checkout() {
                                             placeholder="Enter your email"
                                             className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
+                                        {fieldErrors.customerEmail && <p className="mt-1 text-[11px] text-red-600">{fieldErrors.customerEmail}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">Phone Number</label>
@@ -179,6 +195,7 @@ function Checkout() {
                                             placeholder="Enter your phone number"
                                             className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
+                                        {fieldErrors.phone && <p className="mt-1 text-[11px] text-red-600">{fieldErrors.phone}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">Shipping Address</label>
@@ -191,6 +208,45 @@ function Checkout() {
                                             placeholder="Enter your complete address"
                                             className={`w-full bg-neutral-50 border ${primaryBorder} rounded-2xl p-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
                                         />
+                                        {fieldErrors.shippingAddress && <p className="mt-1 text-[11px] text-red-600">{fieldErrors.shippingAddress}</p>}
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">City</label>
+                                            <input 
+                                                required
+                                                type="text" 
+                                                name="city"
+                                                value={formData.city}
+                                                onChange={handleInputChange}
+                                                placeholder="e.g. Karachi"
+                                                className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                            />
+                                            {fieldErrors.city && <p className="mt-1 text-[11px] text-red-600">{fieldErrors.city}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">Postal Code (Optional)</label>
+                                            <input 
+                                                type="text" 
+                                                name="postalCode"
+                                                value={formData.postalCode}
+                                                onChange={handleInputChange}
+                                                placeholder="e.g. 75500"
+                                                className={`w-full h-14 bg-neutral-50 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                            />
+                                            {fieldErrors.postalCode && <p className="mt-1 text-[11px] text-red-600">{fieldErrors.postalCode}</p>}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-2">Country / Region</label>
+                                        <input 
+                                            required
+                                            type="text" 
+                                            name="country"
+                                            value={formData.country}
+                                            onChange={handleInputChange}
+                                            className={`w-full h-14 bg-neutral-100 border ${primaryBorder} rounded-2xl px-6 text-sm focus:border-emerald-500 focus:outline-none transition-colors`}
+                                        />
                                     </div>
                                 </div>
 
@@ -199,11 +255,39 @@ function Checkout() {
                                         <span className="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-xs font-bold">2</span>
                                         Payment Method
                                     </h2>
-                                    <div className="p-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex items-center gap-4">
-                                        <div className="w-5 h-5 rounded-full border-4 border-emerald-500 bg-slate-950"></div>
-                                        <div>
-                                            <p className="text-sm font-bold">Cash on Delivery (COD)</p>
-                                            <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-bold">Available Nationwide</p>
+                                    <div className="space-y-4">
+                                        <div 
+                                            onClick={() => setPaymentMethod('cod')}
+                                            className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                                                paymentMethod === 'cod' ? 'border-emerald-500 bg-emerald-500/5' : `border-neutral-200 bg-neutral-50 hover:border-neutral-400`
+                                            }`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-5 h-5 rounded-full border-4 flex-shrink-0 transition-all duration-300 ${paymentMethod === 'cod' ? 'border-emerald-500 bg-slate-950' : 'border-neutral-300'}`}></div>
+                                                <div>
+                                                    <p className="text-sm font-bold">Cash on Delivery (COD)</p>
+                                                    <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-bold">Available Nationwide</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div 
+                                            onClick={() => setPaymentMethod('easypaisa')}
+                                            className={`p-6 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                                                paymentMethod === 'easypaisa' ? 'border-emerald-500 bg-emerald-500/5' : `border-neutral-200 bg-neutral-50 hover:border-neutral-400`
+                                            }`}>
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-5 h-5 rounded-full border-4 flex-shrink-0 transition-all duration-300 ${paymentMethod === 'easypaisa' ? 'border-emerald-500 bg-slate-950' : 'border-neutral-300'}`}></div>
+                                                <div>
+                                                    <p className="text-sm font-bold">EasyPaisa</p>
+                                                    <p className="text-[10px] text-emerald-500 uppercase tracking-widest font-bold">Online Payment</p>
+                                                </div>
+                                            </div>
+                                            {paymentMethod === 'easypaisa' && (
+                                                <div className="mt-4 p-4 bg-emerald-500/10 rounded-xl text-xs space-y-2 animate-fade-in">
+                                                    <p><span className="font-bold">Title:</span> Uzair Arain</p>
+                                                    <p><span className="font-bold">Phone No:</span> 03026943399</p>
+                                                    <p className="mt-2 text-emerald-800 font-semibold">(After Transaction WhatsApp Us A Screenshot With Your Order Number at 03026943399 To Confirm The Payment)</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

@@ -12,13 +12,9 @@ import {API_BASE_URL} from "../config/api";
 
 function Shirt() {
     const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
-    const initialCategory = queryParams.get("category") || "shirt";
 
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedCategory, setSelectedCategory] = useState(initialCategory);
-    const [categories, setCategories] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("newest");
     const [selectedSizes, setSelectedSizes] = useState([]);
@@ -26,9 +22,7 @@ function Shirt() {
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
-        const catFromUrl = new URLSearchParams(location.search).get("category") || "shirt";
         const qFromUrl = new URLSearchParams(location.search).get("q") || "";
-        setSelectedCategory(catFromUrl);
         setSearchQuery(qFromUrl);
     }, [location.search]);
 
@@ -36,10 +30,6 @@ function Shirt() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                // Fetch all categories
-                const categoriesRes = await axios.get(`${API_BASE_URL}/categories`);
-                setCategories(categoriesRes.data.categories || []);
-
                 // Fetch products specifically for "shirt" category or similar from backend
                 // We'll broaden the search if needed, but primary fetch is for active shirts
                 const productsRes = await axios.get(`${API_BASE_URL}/products/products`, {

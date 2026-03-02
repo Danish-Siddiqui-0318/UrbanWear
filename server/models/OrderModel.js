@@ -62,6 +62,9 @@ const orderSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        city: { type: String, required: true },
+        postalCode: { type: String },
+        country: { type: String, required: true },
         status: {
             type: String,
             default: "pending",

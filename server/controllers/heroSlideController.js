@@ -87,8 +87,6 @@ async function createSlide(req, res) {
             sortOrder: sortOrder ? Number(sortOrder) : 0,
         });
 
-        req.io.emit("hero-slides-updated");
-
         return res.status(201).json({
             success: true,
             slide,
@@ -143,8 +141,6 @@ async function updateSlide(req, res) {
         await slide.save();
         console.log("[HeroSlider] Slide updated successfully:", slide._id);
 
-        req.io.emit("hero-slides-updated");
-
         return res.status(200).json({
             success: true,
             slide,
@@ -169,8 +165,6 @@ async function deleteSlide(req, res) {
         }
 
         await slide.deleteOne();
-
-        req.io.emit("hero-slides-updated");
 
         return res.status(200).json({
             success: true,

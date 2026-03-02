@@ -11,6 +11,7 @@ import TrackOrder from "./pages/TrackOrder";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import ProductDetail from "./pages/ProductDetail";
+import OrderConfirmation from "./pages/OrderConfirmation";
 import { PublicRoute, AdminRoute } from "./components/RouteGuards";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route
                     path="/admin/login"
                     element={

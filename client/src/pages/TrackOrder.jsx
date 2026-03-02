@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import Navbar from "../components/Navbar";
@@ -184,9 +184,7 @@ function TrackOrder() {
                                                 <p className="text-[10px] text-neutral-500 font-medium">
                                                     Placed on {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </p>
-                                                <button className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest hover:underline">
-                                                    View Receipt
-                                                </button>
+                                                <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Tracking only</span>
                                             </div>
                                         </div>
                                     ))}

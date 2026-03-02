@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import OrderDetailView from './OrderDetailView';
 import { secondaryBorder, cardBackground, mutedText, accentText, primaryBorder } from "../../theme/colors";
 import { API_BASE_URL } from "../../config/api";
 
@@ -23,6 +24,27 @@ const OrderManager = ({ token, orders, loadingOrders, ordersError, fetchOrders }
         } catch (error) {
             console.error("Failed to update order status", error);
             alert("Failed to update status");
+        } finally {
+            setUpdatingStatus(false);
+        }
+    };
+
+    const handleUpdatePaymentStatus = async (orderId, newPaymentStatus) => {
+        if (!token) return;
+        try {
+            setUpdatingStatus(true);
+            await axios.put(
+                `${API_BASE_URL}/orders/${orderId}`,
+                { paymentStatus: newPaymentStatus },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            await fetchOrders();
+            if (selectedOrder && selectedOrder._id === orderId) {
+                setSelectedOrder({ ...selectedOrder, paymentStatus: newPaymentStatus });
+            }
+        } catch (error) {
+            console.error("Failed to update payment status", error);
+            alert("Failed to update payment status");
         } finally {
             setUpdatingStatus(false);
         }
@@ -53,56 +75,12 @@ const OrderManager = ({ token, orders, loadingOrders, ordersError, fetchOrders }
             ) : orders.length === 0 ? (
                 <p className="text-xs">No orders yet.</p>
             ) : selectedOrder ? (
-                <div className="space-y-4 animate-fade-in">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
-                        <div className={`rounded-xl border ${secondaryBorder} p-3`}>
-                            <p className="font-semibold mb-2">Customer Info</p>
-                            <p><span className={mutedText}>Name:</span> {selectedOrder.customerName || "N/A"}</p>
-                            <p><span className={mutedText}>Email:</span> {selectedOrder.customerEmail || "N/A"}</p>
-                            <p><span className={mutedText}>Address:</span> {selectedOrder.shippingAddress || "N/A"}</p>
-                        </div>
-                        <div className={`rounded-xl border ${secondaryBorder} p-3`}>
-                            <p className="font-semibold mb-2">Order Info</p>
-                            <p><span className={mutedText}>Date:</span> {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-                            <p><span className={mutedText}>Total:</span> <span className="font-semibold text-neutral-900">Rs.{selectedOrder.total}</span></p>
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className={mutedText}>Status:</span>
-                                <select 
-                                    value={selectedOrder.status.toLowerCase()}
-                                    disabled={updatingStatus}
-                                    onChange={(e) => handleUpdateStatus(selectedOrder._id, e.target.value)}
-                                    className={`rounded-lg border ${primaryBorder} bg-white px-2 py-1 text-[11px] outline-none focus:border-neutral-900`}
-                                >
-                                    <option value="pending">Pending</option>
-                                    <option value="processing">Processing</option>
-                                    <option value="shipped">Shipped</option>
-                                    <option value="delivered">Delivered</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className={`rounded-xl border ${secondaryBorder} p-3 text-xs`}>
-                        <p className="font-semibold mb-2">Items</p>
-                        <div className="space-y-2">
-                            {selectedOrder.items.map((item, idx) => (
-                                <div key={idx} className="flex items-center justify-between border-b border-neutral-100 pb-2 last:border-0 last:pb-0">
-                                    <div className="flex items-center gap-3">
-                                        {item.image && (
-                                            <img src={item.image} alt={item.name} className="h-8 w-8 rounded object-cover" />
-                                        )}
-                                        <div>
-                                            <p className="font-medium">{item.name}</p>
-                                            <p className={mutedText}>Qty: {item.quantity} • Size: {item.size || "N/A"}</p>
-                                        </div>
-                                    </div>
-                                    <p className="font-medium">Rs.{item.price * item.quantity}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                <OrderDetailView 
+                    order={selectedOrder}
+                    onUpdateStatus={handleUpdateStatus}
+                    onUpdatePaymentStatus={handleUpdatePaymentStatus}
+                    updatingStatus={updatingStatus}
+                />
             ) : (
                 <div className="space-y-2 max-h-80 overflow-y-auto pr-1 text-xs">
                     {orders.map((order) => (
