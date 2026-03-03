@@ -15,7 +15,7 @@ function Cart() {
     const navigate = useNavigate();
 
     const subtotal = getCartTotal();
-    const shipping = subtotal > 8000 ? 0 : 250;
+    const shipping = 1250;
     const total = subtotal + shipping;
 
     if (itemCount === 0) {
@@ -122,11 +122,11 @@ function Cart() {
                                         <span className={mutedText}>Shipping</span>
                                         <span className="font-bold">{shipping === 0 ? "FREE" : `Rs.${shipping}`}</span>
                                     </div>
-                                    {shipping > 0 && (
-                                        <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 p-2 rounded-lg text-center">
-                                            Free shipping on orders over Rs.8000
-                                        </p>
-                                    )}
+                                    {/*{shipping > 0 && (*/}
+                                    {/*    <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 p-2 rounded-lg text-center">*/}
+                                    {/*        Free shipping on orders over Rs.8000*/}
+                                    {/*    </p>*/}
+                                    {/*)}*/}
                                     <div className="pt-4 border-t border-neutral-200 flex justify-between text-lg">
                                         <span className="font-bold">Total</span>
                                         <span className="font-bold text-emerald-500">Rs.{total}</span>

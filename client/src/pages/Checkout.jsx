@@ -283,9 +283,9 @@ function Checkout() {
                                             </div>
                                             {paymentMethod === 'easypaisa' && (
                                                 <div className="mt-4 p-4 bg-emerald-500/10 rounded-xl text-xs space-y-2 animate-fade-in">
-                                                    <p><span className="font-bold">Title:</span> Uzair Arain</p>
-                                                    <p><span className="font-bold">Phone No:</span> 03026943399</p>
-                                                    <p className="mt-2 text-emerald-800 font-semibold">(After Transaction WhatsApp Us A Screenshot With Your Order Number at 03026943399 To Confirm The Payment)</p>
+                                                    <p><span className="font-bold">Title:</span>Syed Muhammed Moiz Hussain</p>
+                                                    <p><span className="font-bold">Phone No:</span> 03183640056</p>
+                                                    <p className="mt-2 text-emerald-800 font-semibold">(After Transaction WhatsApp Us A Screenshot With Your Order Number at 03082251508 To Confirm The Payment)</p>
                                                 </div>
                                             )}
                                         </div>
