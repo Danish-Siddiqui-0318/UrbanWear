@@ -13,6 +13,7 @@ import Checkout from "./pages/Checkout";
 import ProductDetail from "./pages/ProductDetail";
 import OrderConfirmation from "./pages/OrderConfirmation";
 import { PublicRoute, AdminRoute } from "./components/RouteGuards";
+import Customize from "./pages/Customize.jsx";
 
 function App() {
     return (
@@ -23,8 +24,10 @@ function App() {
                 <Route path="/OverSized_TShirts" element={<Oversized_Shirt />} />
                 <Route path="/trousers" element={<Trouser />} />
                 <Route path="/sale" element={<Sale />} />
+                <Route path="/customise" element={<Customize />} />
                 <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="/cart" element={<Cart />} />
+
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />

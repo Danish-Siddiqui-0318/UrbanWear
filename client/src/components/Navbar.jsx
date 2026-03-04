@@ -74,6 +74,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
         { name: "Trouser", path: "/trousers" },
         { name: "Sale", path: "/sale" },
         { name: "Track Order", path: "/track-order" },
+        { name: "Let's Customise", path: "/customise" },
     ];
 
     if (variant === "admin") {
