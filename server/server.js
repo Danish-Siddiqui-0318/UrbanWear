@@ -22,7 +22,7 @@ app.use(cors({
     origin: [
         "http://localhost:5173",
         "https://urbanwearpk.store",
-        "https://urbanwearpk-store.vercel.app"
+        "https://www.urbanwearpk.store"
     ],
     credentials: true
 }));
