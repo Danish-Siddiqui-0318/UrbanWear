@@ -208,7 +208,7 @@ function Navbar({ variant = "public", name = "Admin", onLogout }) {
 
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="md:hidden text-white focus:outline-none"
+                        className="md:hidden text-black focus:outline-none"
                         aria-label="Toggle navigation menu"
                         aria-expanded={isOpen}
                         aria-controls="mobile-menu"
