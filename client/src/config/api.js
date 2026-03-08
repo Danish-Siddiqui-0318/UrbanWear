@@ -1,4 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "urbanwear-production.up.railway.app";
 export const WHATSAPP_NUMBER = (import.meta.env.VITE_WHATSAPP_NUMBER || "03082251508").trim();
 export const WHATSAPP_COUNTRY_CODE = (import.meta.env.VITE_WHATSAPP_CC || "+92").trim();
 const RAW_SITE_URL = (import.meta.env.VITE_SITE_URL || "").trim();
