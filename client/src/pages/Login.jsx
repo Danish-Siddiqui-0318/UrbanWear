@@ -36,7 +36,6 @@ function Login() {
             const data = response.data;
 
             localStorage.setItem("token", data.token);
-            localStorage.setItem("role", "admin");
 
             if (data.name) {
                 localStorage.setItem("name", data.name);

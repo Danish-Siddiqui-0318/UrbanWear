@@ -14,7 +14,6 @@ function parseJwt(token) {
 
 export function getAuthInfo() {
     const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
 
     if (!token) {
         return {
@@ -26,13 +25,21 @@ export function getAuthInfo() {
     }
 
     const payload = parseJwt(token);
-    if (payload && typeof payload.exp === "number") {
+
+    if (!payload) {
+        localStorage.removeItem("token");
+        return {
+            token: null,
+            role: null,
+            isAdmin: false,
+            isAuthenticated: false,
+        };
+    }
+
+    if (typeof payload.exp === "number") {
         const nowInSeconds = Date.now() / 1000;
         if (payload.exp < nowInSeconds) {
             localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            localStorage.removeItem("name");
-
             return {
                 token: null,
                 role: null,
@@ -42,6 +49,7 @@ export function getAuthInfo() {
         }
     }
 
+    const role = payload.role || null;
     const isAdmin = role === "admin";
 
     return {

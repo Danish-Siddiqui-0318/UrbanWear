@@ -36,8 +36,6 @@ const limiter = rateLimit({
     max: 100, // limit each IP to 100 requests per windowMs
     message: "Too many requests from this IP, please try again after 15 minutes"
 });
-// app.use("/auth/login", limiter);
-// app.use("/auth/register", limiter);
 app.use("/auth", authRoute);
 app.use("/products", ProductRoute);
 app.use("/orders", OrderRoute);
